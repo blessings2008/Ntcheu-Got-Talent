@@ -208,6 +208,32 @@
       position: relative;
       overflow: hidden;
     }
+    .track-cover img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .artwork-drop {
+      display: flex; align-items: center; gap: 14px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .artwork-drop:hover { border-color: var(--accent); background: rgba(155,93,229,.05); }
+    .artwork-preview {
+      width: 48px; height: 48px;
+      min-width: 48px;
+      border-radius: 8px;
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      overflow: hidden;
+    }
+    .artwork-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .artwork-drop p { color: var(--muted); font-size: 0.82rem; margin: 0; }
+    .artwork-drop span { color: var(--accent); font-weight: 600; }
     .track-cover .play-overlay {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
@@ -536,6 +562,13 @@
         <p><span>Click to choose</span> or drag your audio file here<br>MP3, WAV, FLAC — up to 50 MB</p>
       </div>
       <div id="fileName" style="color:var(--accent);font-size:0.85rem;display:none;"></div>
+
+      <div class="artwork-drop" onclick="document.getElementById('artworkInput').click()">
+        <input type="file" id="artworkInput" accept="image/*" style="display:none" onchange="handleArtwork(this)"/>
+        <div class="artwork-preview" id="artworkPreview">🖼️</div>
+        <p><span>Add cover art</span> (optional) — JPG or PNG</p>
+      </div>
+
       <div class="upload-error" id="uploadError"></div>
       <button class="btn-primary" style="width:100%;padding:16px" id="uploadBtn" onclick="handleUpload()">Upload Track</button>
     </div>
@@ -571,14 +604,16 @@
   const SUPABASE_URL = 'https://qlcnrssinldjpxqhbajp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_pnuLHk7AG5pIlYynbDVV7Q_AnPPzwQl';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const BUCKET = 'Track's';
-  const TABLE = 'Track's';
-  const MAX_FILE_MB = 50;
+  const BUCKET = 'tracks';
+  const TABLE = 'tracks';
+  const MAX_AUDIO_MB = 50;
+  const MAX_ARTWORK_MB = 5;
 
   const gradients = ['grad-1','grad-2','grad-3','grad-4','grad-5','grad-6'];
   const emojis = ['🎵','🎶','🎤','🎸','🥁','🎹','🎺','🎻'];
 
   let selectedFile = null;
+  let selectedArtwork = null;
   let playing = false;
   let currentTrack = null;
 
@@ -631,13 +666,16 @@
   function buildTrackCard(track, i) {
     const g = gradients[i % gradients.length];
     const emoji = emojis[i % emojis.length];
+    const coverInner = track.artwork_url
+      ? `<img src="${track.artwork_url}" alt="${escapeHtml(track.title)} artwork" loading="lazy"/>`
+      : emoji;
 
     const card = document.createElement('div');
     card.className = 'track-card';
     card.onclick = () => playTrack(track);
     card.innerHTML = `
-      <div class="track-cover ${g}">
-        ${emoji}
+      <div class="track-cover ${track.artwork_url ? '' : g}">
+        ${coverInner}
         <div class="play-overlay"><div class="play-btn-big">▶</div></div>
       </div>
       <div class="track-info">
@@ -645,7 +683,7 @@
         <div class="track-artist">${escapeHtml(track.artist)}</div>
         <div class="track-meta">
           <span class="track-genre">${escapeHtml(track.genre || 'Music')}</span>
-          <button class="download-btn" data-url="${track.file_url}" data-name="${escapeHtml(track.title)}">⬇ Download</button>
+          <button class="download-btn">⬇ Download</button>
         </div>
       </div>`;
     card.querySelector('.download-btn').addEventListener('click', (e) => {
@@ -688,8 +726,9 @@
   audioEl.addEventListener('timeupdate', () => {
     if (!audioEl.duration) return;
     const pct = (audioEl.currentTime / audioEl.duration) * 100;
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressFill').style.animation = 'none';
+    const fill = document.getElementById('progressFill');
+    fill.style.animation = 'none';
+    fill.style.width = pct + '%';
   });
 
   audioEl.addEventListener('ended', () => {
@@ -703,7 +742,7 @@
     document.getElementById('playerBar').classList.remove('active');
   }
 
-  // ── UPLOAD ──
+  // ── FILE SELECTION ──
   function handleFile(input) {
     const fileNameEl = document.getElementById('fileName');
     const errorEl = document.getElementById('uploadError');
@@ -712,8 +751,8 @@
     if (!input.files.length) { selectedFile = null; fileNameEl.style.display = 'none'; return; }
 
     const file = input.files[0];
-    if (file.size > MAX_FILE_MB * 1024 * 1024) {
-      errorEl.textContent = `File is too big — max ${MAX_FILE_MB}MB.`;
+    if (file.size > MAX_AUDIO_MB * 1024 * 1024) {
+      errorEl.textContent = `Audio file is too big — max ${MAX_AUDIO_MB}MB.`;
       errorEl.style.display = 'block';
       input.value = '';
       selectedFile = null;
@@ -724,6 +763,56 @@
     selectedFile = file;
     fileNameEl.textContent = '✓ ' + file.name;
     fileNameEl.style.display = 'block';
+  }
+
+  function handleArtwork(input) {
+    const previewEl = document.getElementById('artworkPreview');
+    const errorEl = document.getElementById('uploadError');
+    errorEl.style.display = 'none';
+
+    if (!input.files.length) { selectedArtwork = null; previewEl.innerHTML = '🖼️'; return; }
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      errorEl.textContent = 'Cover art must be an image file.';
+      errorEl.style.display = 'block';
+      input.value = '';
+      selectedArtwork = null;
+      return;
+    }
+    if (file.size > MAX_ARTWORK_MB * 1024 * 1024) {
+      errorEl.textContent = `Cover art is too big — max ${MAX_ARTWORK_MB}MB.`;
+      errorEl.style.display = 'block';
+      input.value = '';
+      selectedArtwork = null;
+      return;
+    }
+
+    selectedArtwork = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewEl.innerHTML = `<img src="${e.target.result}" alt="artwork preview"/>`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── UPLOAD ──
+  function sanitizeFilename(name) {
+    return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  }
+
+  async function uploadToBucket(file, prefix) {
+    const filePath = `${prefix}/${Date.now()}_${sanitizeFilename(file.name)}`;
+    const { error } = await sb.storage
+      .from(BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || 'application/octet-stream',
+      });
+    if (error) throw error;
+    const { data } = sb.storage.from(BUCKET).getPublicUrl(filePath);
+    return data.publicUrl;
   }
 
   async function handleUpload() {
@@ -754,29 +843,20 @@
     btn.textContent = 'Uploading…';
 
     try {
-      // 1. Upload audio file to Storage
-      const safeName = selectedFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-      const filePath = `${Date.now()}_${safeName}`;
+      // 1. Upload audio file
+      const fileUrl = await uploadToBucket(selectedFile, 'audio');
 
-      const { error: uploadError } = await sb.storage
-        .from(BUCKET)
-        .upload(filePath, selectedFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: selectedFile.type || 'audio/mpeg',
-        });
-
-      if (uploadError) throw uploadError;
-
-      // 2. Get its public URL
-      const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(filePath);
-      const fileUrl = urlData.publicUrl;
+      // 2. Upload artwork if provided
+      let artworkUrl = null;
+      if (selectedArtwork) {
+        artworkUrl = await uploadToBucket(selectedArtwork, 'artwork');
+      }
 
       // 3. Save metadata row
-      const { error: insertError } = await sb
-        .from(TABLE)
-        .insert([{ title, artist, genre, file_url: fileUrl }]);
+      const row = { title, artist, genre, file_url: fileUrl };
+      if (artworkUrl) row.artwork_url = artworkUrl;
 
+      const { error: insertError } = await sb.from(TABLE).insert([row]);
       if (insertError) throw insertError;
 
       // Success
@@ -788,7 +868,10 @@
       genreEl.value = '';
       document.getElementById('fileInput').value = '';
       document.getElementById('fileName').style.display = 'none';
+      document.getElementById('artworkInput').value = '';
+      document.getElementById('artworkPreview').innerHTML = '🖼️';
       selectedFile = null;
+      selectedArtwork = null;
 
       await loadTracks();
       document.getElementById('tracks').scrollIntoView({ behavior: 'smooth' });
@@ -801,7 +884,13 @@
 
     } catch (err) {
       console.error('Upload failed:', err);
-      errorEl.textContent = '⚠️ Upload failed: ' + (err.message || 'check console for details.');
+      let msg = err.message || 'check console for details.';
+      if (/bucket.*not.*found/i.test(msg)) {
+        msg = `Storage bucket "${BUCKET}" not found — create it in Supabase → Storage (public, name: "${BUCKET}").`;
+      } else if (/row-level security|RLS/i.test(msg)) {
+        msg = 'Database blocked the insert — check your RLS policies allow public insert on the "tracks" table.';
+      }
+      errorEl.textContent = '⚠️ Upload failed: ' + msg;
       errorEl.style.display = 'block';
       btn.textContent = 'Upload Track';
       btn.disabled = false;
