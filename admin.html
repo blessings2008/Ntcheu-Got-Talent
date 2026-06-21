@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Ntcheu Got Talent</title>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --card:      #16161f;
+      --border:    #222230;
+      --accent:    #9b5de5;
+      --accent2:   #f15bb5;
+      --text:      #e8e8f0;
+      --muted:     #6b6b88;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 44px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .panel-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, rgba(155,93,229,.2), rgba(241,91,181,.2));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 20px;
+    }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      letter-spacing: 2px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 14px; }
+    input, select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 13px 16px;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    select option { background: var(--surface); }
+
+    .file-drop {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .file-drop:hover { border-color: var(--accent); background: rgba(155,93,229,.05); }
+    .file-drop-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .file-drop p { color: var(--muted); font-size: 0.82rem; margin: 0; }
+    .file-drop span { color: var(--accent); font-weight: 600; }
+
+    .artwork-drop {
+      display: flex; align-items: center; gap: 14px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .artwork-drop:hover { border-color: var(--accent); background: rgba(155,93,229,.05); }
+    .artwork-preview {
+      width: 44px; height: 44px; min-width: 44px;
+      border-radius: 8px;
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      overflow: hidden;
+    }
+    .artwork-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .artwork-drop p { color: var(--muted); font-size: 0.8rem; margin: 0; }
+    .artwork-drop span { color: var(--accent); font-weight: 600; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 30px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity .2s;
+    }
+    .btn-primary:hover { opacity: .87; }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+    .error-msg {
+      color: #ff6b6b;
+      font-size: 0.82rem;
+      display: none;
+    }
+    .file-name { color: var(--accent); font-size: 0.82rem; display: none; }
+
+    .session-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .session-bar a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .session-bar a:hover { text-decoration: underline; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-decoration: none;
+    }
+    .back-link:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="panel">
+
+  <!-- LOGIN GATE -->
+  <div id="loginGate">
+    <div class="panel-icon">🔒</div>
+    <h1>Artist Login</h1>
+    <p class="subtitle">Ntcheu Got Talent — admin upload</p>
+    <div class="form-group">
+      <input type="email" placeholder="Email" id="loginEmail"/>
+      <input type="password" placeholder="Password" id="loginPassword"/>
+      <div class="error-msg" id="loginError"></div>
+      <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Log In</button>
+    </div>
+  </div>
+
+  <!-- UPLOAD FORM -->
+  <div id="uploadWrapper" style="display:none">
+    <div class="session-bar">
+      <span>Logged in as <strong id="loggedInEmail"></strong></span>
+      <a href="#" onclick="handleLogout(); return false;">Log out</a>
+    </div>
+    <div class="panel-icon">🎶</div>
+    <h1>Upload a Track</h1>
+    <p class="subtitle">Add a new song to Ntcheu Got Talent</p>
+    <div class="form-group">
+      <input type="text" placeholder="Track title *" id="trackTitle"/>
+      <input type="text" placeholder="Artist name *" id="artistName"/>
+      <select id="genreSelect">
+        <option value="" disabled selected>Select genre</option>
+        <option>Afro-pop</option>
+        <option>Hip-hop / Rap</option>
+        <option>R&B / Soul</option>
+        <option>Gospel</option>
+        <option>Reggae</option>
+        <option>Dancehall</option>
+        <option>Electronic</option>
+        <option>Other</option>
+      </select>
+
+      <div class="file-drop" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="audio/*" style="display:none" onchange="handleFile(this)"/>
+        <div class="file-drop-icon">🎧</div>
+        <p><span>Click to choose</span> audio file — MP3, WAV, FLAC, up to 50MB</p>
+      </div>
+      <div class="file-name" id="fileName"></div>
+
+      <div class="artwork-drop" onclick="document.getElementById('artworkInput').click()">
+        <input type="file" id="artworkInput" accept="image/*" style="display:none" onchange="handleArtwork(this)"/>
+        <div class="artwork-preview" id="artworkPreview">🖼️</div>
+        <p><span>Add cover art</span> (optional) — JPG or PNG</p>
+      </div>
+
+      <div class="error-msg" id="uploadError"></div>
+      <button class="btn-primary" id="uploadBtn" onclick="handleUpload()">Upload Track</button>
+    </div>
+  </div>
+
+  <a class="back-link" href="/">← Back to public site</a>
+</div>
+
+<script>
+  // ── SUPABASE SETUP ──
+  const SUPABASE_URL = 'https://qlcnrssinldjpxqhbajp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_pnuLHk7AG5pIlYynbDVV7Q_AnPPzwQl';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const BUCKET = 'tracks';
+  const TABLE = 'tracks';
+  const MAX_AUDIO_MB = 50;
+  const MAX_ARTWORK_MB = 5;
+
+  let selectedFile = null;
+  let selectedArtwork = null;
+
+  // ── AUTH ──
+  async function checkAuth() {
+    const { data: { session } } = await sb.auth.getSession();
+    updateAuthUI(session);
+  }
+
+  function updateAuthUI(session) {
+    const loginGate = document.getElementById('loginGate');
+    const uploadWrapper = document.getElementById('uploadWrapper');
+    if (session && session.user) {
+      loginGate.style.display = 'none';
+      uploadWrapper.style.display = 'block';
+      document.getElementById('loggedInEmail').textContent = session.user.email;
+    } else {
+      loginGate.style.display = 'block';
+      uploadWrapper.style.display = 'none';
+    }
+  }
+
+  async function handleLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+    errorEl.style.display = 'none';
+
+    if (!email || !password) {
+      errorEl.textContent = 'Enter both email and password.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Logging in…';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    btn.textContent = 'Log In';
+
+    if (error) {
+      errorEl.textContent = '⚠️ ' + (error.message || 'Login failed.');
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    updateAuthUI(data.session);
+  }
+
+  async function handleLogout() {
+    await sb.auth.signOut();
+    updateAuthUI(null);
+  }
+
+  sb.auth.onAuthStateChange((_event, session) => {
+    updateAuthUI(session);
+  });
+
+  // ── FILE SELECTION ──
+  function handleFile(input) {
+    const fileNameEl = document.getElementById('fileName');
+    const errorEl = document.getElementById('uploadError');
+    errorEl.style.display = 'none';
+
+    if (!input.files.length) { selectedFile = null; fileNameEl.style.display = 'none'; return; }
+
+    const file = input.files[0];
+    if (file.size > MAX_AUDIO_MB * 1024 * 1024) {
+      errorEl.textContent = `Audio file is too big — max ${MAX_AUDIO_MB}MB.`;
+      errorEl.style.display = 'block';
+      input.value = '';
+      selectedFile = null;
+      fileNameEl.style.display = 'none';
+      return;
+    }
+
+    selectedFile = file;
+    fileNameEl.textContent = '✓ ' + file.name;
+    fileNameEl.style.display = 'block';
+  }
+
+  function handleArtwork(input) {
+    const previewEl = document.getElementById('artworkPreview');
+    const errorEl = document.getElementById('uploadError');
+    errorEl.style.display = 'none';
+
+    if (!input.files.length) { selectedArtwork = null; previewEl.innerHTML = '🖼️'; return; }
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      errorEl.textContent = 'Cover art must be an image file.';
+      errorEl.style.display = 'block';
+      input.value = '';
+      selectedArtwork = null;
+      return;
+    }
+    if (file.size > MAX_ARTWORK_MB * 1024 * 1024) {
+      errorEl.textContent = `Cover art is too big — max ${MAX_ARTWORK_MB}MB.`;
+      errorEl.style.display = 'block';
+      input.value = '';
+      selectedArtwork = null;
+      return;
+    }
+
+    selectedArtwork = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewEl.innerHTML = `<img src="${e.target.result}" alt="artwork preview"/>`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── UPLOAD ──
+  function sanitizeFilename(name) {
+    return name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  }
+
+  async function uploadToBucket(file, prefix) {
+    const filePath = `${prefix}/${Date.now()}_${sanitizeFilename(file.name)}`;
+    const { error } = await sb.storage
+      .from(BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || 'application/octet-stream',
+      });
+    if (error) throw error;
+    const { data } = sb.storage.from(BUCKET).getPublicUrl(filePath);
+    return data.publicUrl;
+  }
+
+  async function handleUpload() {
+    const titleEl = document.getElementById('trackTitle');
+    const artistEl = document.getElementById('artistName');
+    const genreEl = document.getElementById('genreSelect');
+    const errorEl = document.getElementById('uploadError');
+    const btn = document.getElementById('uploadBtn');
+
+    const title = titleEl.value.trim();
+    const artist = artistEl.value.trim();
+    const genre = genreEl.value;
+
+    errorEl.style.display = 'none';
+
+    if (!title || !artist) {
+      errorEl.textContent = 'Please fill in the track title and artist name.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (!selectedFile) {
+      errorEl.textContent = 'Please choose an audio file to upload.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Uploading…';
+
+    try {
+      const fileUrl = await uploadToBucket(selectedFile, 'audio');
+
+      let artworkUrl = null;
+      if (selectedArtwork) {
+        artworkUrl = await uploadToBucket(selectedArtwork, 'artwork');
+      }
+
+      const row = { title, artist, genre, file_url: fileUrl };
+      if (artworkUrl) row.artwork_url = artworkUrl;
+
+      const { error: insertError } = await sb.from(TABLE).insert([row]);
+      if (insertError) throw insertError;
+
+      btn.textContent = '✓ Uploaded!';
+      btn.style.background = 'linear-gradient(135deg,#1a6e3a,#2dbe6c)';
+
+      titleEl.value = '';
+      artistEl.value = '';
+      genreEl.value = '';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileName').style.display = 'none';
+      document.getElementById('artworkInput').value = '';
+      document.getElementById('artworkPreview').innerHTML = '🖼️';
+      selectedFile = null;
+      selectedArtwork = null;
+
+      setTimeout(() => {
+        btn.textContent = 'Upload Track';
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 2200);
+
+    } catch (err) {
+      console.error('Upload failed:', err);
+      let msg = err.message || 'check console for details.';
+      if (/bucket.*not.*found/i.test(msg)) {
+        msg = `Storage bucket "${BUCKET}" not found — create it in Supabase → Storage (public, name: "${BUCKET}").`;
+      } else if (/row-level security|RLS/i.test(msg)) {
+        msg = 'Database blocked the insert — check your RLS policies allow authenticated insert on "tracks" and the storage bucket.';
+      }
+      errorEl.textContent = '⚠️ Upload failed: ' + msg;
+      errorEl.style.display = 'block';
+      btn.textContent = 'Upload Track';
+      btn.disabled = false;
+    }
+  }
+
+  // ── INIT ──
+  checkAuth();
+</script>
+</body>
+</html>
