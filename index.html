@@ -3,730 +3,1041 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{OG_TITLE}}</title>
-  <meta name="description" content="{{OG_DESC}}"/>
-
-  <meta property="og:type" content="website"/>
-  <meta property="og:title" content="{{OG_TITLE}}"/>
-  <meta property="og:description" content="{{OG_DESC}}"/>
-  <meta property="og:url" content="{{OG_URL}}"/>
-  {{OG_IMAGE_TAGS}}
-
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="{{OG_TITLE}}"/>
-  <meta name="twitter:description" content="{{OG_DESC}}"/>
-
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Bebas+Neue&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <title>Ntcheu Got Talent · Malawi's Rising Sound</title>
+  <meta name="description" content="Ntcheu Got Talent — discover and download fresh music from Carbon Es and the best local artists. Stream free. Download free. Support the culture."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600&family=Bebas+Neue&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── RESET & BASE ── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg:        #0a0a0f;
-      --surface:   #111118;
-      --card:      #16161f;
-      --border:    #222230;
-      --accent:    #9b5de5;
-      --accent2:   #f15bb5;
-      --gold:      #fee440;
-      --text:      #e8e8f0;
-      --muted:     #6b6b88;
-      --radius:    12px;
+      --bg-primary: #08080e;
+      --bg-secondary: #0e0e17;
+      --bg-card: #14141f;
+      --bg-elevated: #1a1a2a;
+      --border-subtle: #23233a;
+      --border-active: #3d3d6b;
+      --text-primary: #f0f0f8;
+      --text-secondary: #9898b8;
+      --text-muted: #5c5c7a;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-gold: #fbbf24;
+      --accent-blue: #3b82f6;
+      --gradient-main: linear-gradient(135deg, #8b5cf6, #ec4899);
+      --gradient-hero: linear-gradient(180deg, rgba(139,92,246,0.25) 0%, transparent 70%);
+      --radius-card: 16px;
+      --radius-pill: 9999px;
+      --shadow-card: 0 8px 32px rgba(0,0,0,0.5);
+      --transition-default: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     html { scroll-behavior: smooth; }
-
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg-primary);
+      color: var(--text-primary);
       font-family: 'Space Grotesk', sans-serif;
       min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ── NAV ── */
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 3px; }
+
+    /* ── UTILITY ── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── GLASS PANEL ── */
+    .glass {
+      background: rgba(20, 20, 31, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ── NAVIGATION ── */
     nav {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 40px;
-      background: rgba(10,10,15,0.88);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      transition: var(--transition-default);
+    }
+    nav.scrolled {
+      background: rgba(8, 8, 14, 0.92);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .nav-logo {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.6rem;
+      font-size: 1.8rem;
       letter-spacing: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      background: var(--gradient-main);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-    .nav-links { display: flex; gap: 28px; }
-    .nav-links a {
-      color: var(--muted);
       text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: color .2s;
     }
-    .nav-links a:hover { color: var(--text); }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: var(--transition-default);
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gradient-main);
+      transition: var(--transition-default);
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: var(--gradient-main);
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { opacity: 0.85; color: #fff !important; }
+
+    /* ── MOBILE MENU ── */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .menu-toggle span {
+      display: block;
+      width: 26px;
+      height: 2px;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: var(--transition-default);
+    }
+    .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .menu-toggle.active span:nth-child(2) { opacity: 0; }
+    .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
     /* ── HERO ── */
     .hero {
       position: relative;
-      padding: 100px 40px 80px;
+      padding: 140px 0 80px;
       text-align: center;
       overflow: hidden;
+      background: var(--bg-primary);
     }
     .hero::before {
       content: '';
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(155,93,229,0.22) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 80% 60%, rgba(241,91,181,0.12) 0%, transparent 70%);
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(139,92,246,0.2) 0%, transparent 70%);
       pointer-events: none;
     }
-    .hero-tag {
+    .hero-badge {
       display: inline-block;
-      background: rgba(255,228,64,0.12);
-      color: var(--gold);
-      border: 1px solid rgba(255,228,64,0.3);
-      font-size: 0.75rem;
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--accent-gold);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      font-size: 0.7rem;
       font-weight: 600;
       letter-spacing: 2px;
       text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 30px;
-      margin-bottom: 20px;
+      padding: 6px 18px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
     }
     .hero h1 {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3.5rem, 10vw, 8rem);
+      font-size: clamp(3.5rem, 12vw, 7rem);
       line-height: 0.95;
-      letter-spacing: 4px;
-      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      letter-spacing: 2px;
+      background: linear-gradient(180deg, #ffffff 30%, var(--accent-purple) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 span {
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     .hero-sub {
-      font-size: 1rem;
-      color: var(--muted);
-      max-width: 480px;
-      margin: 0 auto 36px;
-      line-height: 1.6;
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin: 0 auto 40px;
+      line-height: 1.8;
+      position: relative;
+      z-index: 1;
     }
-    .hero-sub span { color: var(--accent2); font-weight: 600; }
-    .hero-cta {
-      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    .hero-sub strong { color: var(--accent-pink); font-weight: 600; }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
     }
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: var(--gradient-main);
       color: #fff;
       border: none;
-      padding: 14px 32px;
-      border-radius: 30px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: opacity .2s, transform .15s;
-    }
-    .btn-primary:hover { opacity: .87; transform: translateY(-2px); }
-    .btn-outline {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 14px 32px;
-      border-radius: 30px;
+      padding: 14px 36px;
+      border-radius: var(--radius-pill);
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: border-color .2s, background .2s;
+      transition: var(--transition-default);
+      box-shadow: 0 4px 20px rgba(139,92,246,0.3);
     }
-    .btn-outline:hover { border-color: var(--accent); background: rgba(155,93,229,.08); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(139,92,246,0.4); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      padding: 14px 36px;
+      border-radius: var(--radius-pill);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition-default);
+    }
+    .btn-secondary:hover { border-color: var(--accent-purple); background: rgba(139,92,246,0.08); }
 
     /* ── STATS BAR ── */
     .stats-bar {
-      display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;
-      padding: 32px 40px;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 64px;
+      flex-wrap: wrap;
+      padding: 28px 0;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-secondary);
     }
-    .stat { text-align: center; }
-    .stat-num {
+    .stat-item { text-align: center; }
+    .stat-number {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 2.2rem;
-      color: var(--accent);
+      font-size: 2.4rem;
       letter-spacing: 1px;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .stat-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 500;
+    }
 
-    /* ── SECTION ── */
-    section { padding: 64px 40px; max-width: 1100px; margin: 0 auto; }
+    /* ── SECTION HEADER ── */
     .section-header {
-      display: flex; align-items: baseline; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 32px;
-      flex-wrap: wrap; gap: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .section-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem;
-      letter-spacing: 2px;
-      color: var(--text);
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+      color: var(--text-primary);
     }
-    .section-title span { color: var(--accent); }
-    .search-input {
-      width: 100%;
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 14px 18px;
-      border-radius: 30px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.92rem;
-      outline: none;
-      margin-bottom: 24px;
-      transition: border-color .2s;
-    }
-    .search-input::placeholder { color: var(--muted); }
-    .search-input:focus { border-color: var(--accent); }
-    .see-all {
-      color: var(--accent);
+    .section-title .highlight { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .section-link {
+      color: var(--text-secondary);
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: 500;
       text-decoration: none;
-      cursor: pointer;
+      transition: var(--transition-default);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .see-all:hover { text-decoration: underline; }
+    .section-link:hover { color: var(--text-primary); }
 
-    /* ── TRACK CARDS ── */
+    /* ── SEARCH ── */
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 32px;
+    }
+    .search-wrapper input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 16px 20px 16px 52px;
+      border-radius: var(--radius-pill);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition-default);
+    }
+    .search-wrapper input::placeholder { color: var(--text-muted); }
+    .search-wrapper input:focus { border-color: var(--accent-purple); box-shadow: 0 0 0 4px rgba(139,92,246,0.1); }
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    /* ── TRACKS GRID ── */
     .tracks-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 18px;
+      gap: 24px;
     }
+
+    /* ── TRACK CARD ── */
     .track-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
       overflow: hidden;
-      transition: border-color .2s, transform .2s, box-shadow .2s;
+      transition: var(--transition-default);
       cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,.3);
+      box-shadow: var(--shadow-card);
     }
-    .track-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 24px rgba(155,93,229,.18); }
+    .track-card:hover {
+      border-color: var(--accent-purple);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 48px rgba(139,92,246,0.15);
+    }
     .track-cover {
-      width: 100%; height: 160px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 3rem;
+      width: 100%;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
       position: relative;
       overflow: hidden;
+      background: var(--bg-elevated);
     }
     .track-cover img {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
     .track-cover .play-overlay {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.45);
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.5);
       opacity: 0;
-      transition: opacity .2s;
+      transition: var(--transition-default);
     }
     .track-card:hover .play-overlay { opacity: 1; }
-    .play-btn-big {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    .play-btn-circle {
+      width: 56px; height: 56px;
+      background: var(--gradient-main);
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: #fff;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 20px rgba(139,92,246,0.4);
     }
-    .track-info { padding: 16px; }
-    .track-name { font-weight: 700; font-size: 0.97rem; margin-bottom: 4px; }
-    .track-artist { color: var(--muted); font-size: 0.82rem; margin-bottom: 12px; }
+    .track-info { padding: 18px 20px 20px; }
+    .track-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .track-title .verified {
+      display: inline-block;
+      background: var(--accent-blue);
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 700;
+      padding: 1px 8px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .track-artist {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
     .track-meta {
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     .track-genre {
-      align-self: flex-start;
-      background: rgba(155,93,229,.15);
-      color: var(--accent);
-      font-size: 0.72rem;
+      background: rgba(139,92,246,0.12);
+      color: var(--accent-purple);
+      font-size: 0.7rem;
       font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
     }
-    .track-actions { display: flex; gap: 8px; }
-    .download-btn, .copy-btn {
-      flex: 1;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+    .track-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .track-actions button {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 7px 10px;
-      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: background .2s, border-color .2s;
-      white-space: nowrap;
+      transition: var(--transition-default);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
-    .download-btn:hover { background: rgba(155,93,229,.12); border-color: var(--accent); }
-    .copy-btn:hover { background: rgba(241,91,181,.12); border-color: var(--accent2); }
-
-    /* Gradient backgrounds for cards */
-    .grad-1 { background: linear-gradient(135deg, #1a0a2e, #4a1a6e); }
-    .grad-2 { background: linear-gradient(135deg, #0d1f2d, #1a4a6e); }
-    .grad-3 { background: linear-gradient(135deg, #1f0d10, #6e1a2e); }
-    .grad-4 { background: linear-gradient(135deg, #0d1f0d, #1a6e3a); }
-    .grad-5 { background: linear-gradient(135deg, #1f1a0d, #6e5a1a); }
-    .grad-6 { background: linear-gradient(135deg, #1a0d1f, #5a1a6e); }
+    .track-actions button:hover {
+      background: rgba(139,92,246,0.08);
+      border-color: var(--accent-purple);
+      color: var(--text-primary);
+    }
 
     /* ── ARTIST SPOTLIGHT ── */
     .spotlight {
-      background: linear-gradient(135deg, rgba(155,93,229,.12), rgba(241,91,181,.08));
-      border: 1px solid rgba(155,93,229,.25);
-      border-radius: 16px;
-      padding: 40px;
-      display: flex; gap: 36px; align-items: center;
+      background: linear-gradient(145deg, rgba(139,92,246,0.08), rgba(236,72,153,0.05));
+      border: 1px solid rgba(139,92,246,0.15);
+      border-radius: var(--radius-card);
+      padding: 40px 48px;
+      display: flex;
+      gap: 40px;
+      align-items: center;
       flex-wrap: wrap;
     }
     .spotlight-avatar {
-      width: 110px; height: 110px; min-width: 110px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      width: 120px; height: 120px; min-width: 120px;
+      background: var(--gradient-main);
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      box-shadow: 0 8px 32px rgba(139,92,246,0.25);
     }
     .spotlight-info h3 {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem;
-      letter-spacing: 2px;
+      font-size: 2.2rem;
+      letter-spacing: 1px;
       margin-bottom: 4px;
     }
-    .spotlight-info .tag {
+    .spotlight-info .badge {
       display: inline-block;
-      background: rgba(255,228,64,.12);
-      color: var(--gold);
-      border: 1px solid rgba(255,228,64,.3);
-      font-size: 0.72rem;
+      background: rgba(251,191,36,0.12);
+      color: var(--accent-gold);
+      border: 1px solid rgba(251,191,36,0.2);
+      font-size: 0.7rem;
       font-weight: 600;
-      letter-spacing: 1.5px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      padding: 3px 12px;
-      border-radius: 20px;
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
       margin-bottom: 12px;
     }
-    .spotlight-info p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; max-width: 440px; }
+    .spotlight-info p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      max-width: 480px;
+    }
 
     /* ── HIT SONG ── */
-    .hit-song-card {
-      background: linear-gradient(135deg, rgba(255,228,64,.08), rgba(241,91,181,.06));
-      border: 1px solid rgba(255,228,64,.25);
-      border-radius: 16px;
-      padding: 28px;
+    .hit-song {
+      background: linear-gradient(145deg, rgba(251,191,36,0.06), rgba(139,92,246,0.04));
+      border: 1px solid rgba(251,191,36,0.15);
+      border-radius: var(--radius-card);
+      padding: 28px 32px;
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 28px;
       flex-wrap: wrap;
+      transition: var(--transition-default);
       cursor: pointer;
-      transition: border-color .2s, transform .2s;
     }
-    .hit-song-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .hit-song:hover {
+      border-color: var(--accent-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(251,191,36,0.08);
+    }
     .hit-song-cover {
-      width: 88px; height: 88px; min-width: 88px;
+      width: 80px; height: 80px; min-width: 80px;
       border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
       overflow: hidden;
-      position: relative;
+      background: var(--bg-elevated);
     }
     .hit-song-cover img { width: 100%; height: 100%; object-fit: cover; }
     .hit-song-info { flex: 1; min-width: 160px; }
     .hit-song-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: rgba(255,228,64,.15);
-      color: var(--gold);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(251,191,36,0.12);
+      color: var(--accent-gold);
       font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: 1.5px;
       text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 20px;
+      letter-spacing: 1px;
+      padding: 4px 14px;
+      border-radius: var(--radius-pill);
       margin-bottom: 8px;
     }
-    .hit-song-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 2px; }
-    .hit-song-artist { color: var(--muted); font-size: 0.88rem; }
-    .hit-song-actions { display: flex; gap: 10px; }
+    .hit-song-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+    }
+    .hit-song-artist { color: var(--text-secondary); font-size: 0.9rem; }
+    .hit-song-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
     /* ── FOOTER ── */
     footer {
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-      padding: 56px 40px 0;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-secondary);
+      padding: 60px 0 0;
+      margin-top: 60px;
     }
-    .footer-inner {
-      max-width: 1100px;
-      margin: 0 auto;
+    .footer-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 2fr 1fr 1fr;
       gap: 48px;
-      padding-bottom: 36px;
+      padding-bottom: 40px;
     }
-    .footer-logo {
+    .footer-brand .footer-logo {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       letter-spacing: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      background: var(--gradient-main);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin-bottom: 12px;
     }
-    .footer-col p { color: var(--muted); font-size: 0.85rem; line-height: 1.7; max-width: 420px; }
-    .footer-heading {
-      font-size: 0.78rem;
+    .footer-brand p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.8; max-width: 420px; }
+    .footer-col h4 {
+      font-size: 0.8rem;
       font-weight: 700;
-      letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--text);
-      margin-bottom: 12px;
+      letter-spacing: 1.5px;
+      color: var(--text-primary);
+      margin-bottom: 16px;
     }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: var(--transition-default);
+    }
+    .footer-col ul a:hover { color: var(--text-primary); }
     .footer-bottom {
-      border-top: 1px solid var(--border);
-      max-width: 1100px;
-      margin: 0 auto;
+      border-top: 1px solid var(--border-subtle);
       padding: 20px 0;
       text-align: center;
-      color: var(--muted);
-      font-size: 0.78rem;
-    }
-
-    @media (max-width: 640px) {
-      .footer-inner { grid-template-columns: 1fr; gap: 28px; padding: 0 4px 28px; }
-      .hit-song-card { padding: 20px; }
+      color: var(--text-muted);
+      font-size: 0.8rem;
     }
 
     /* ── PLAYER BAR ── */
     .player-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(17,17,24,.96);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(14px);
-      padding: 14px 36px;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(8, 8, 14, 0.95);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border-subtle);
+      padding: 14px 28px;
       display: none;
-      align-items: center; gap: 24px;
+      align-items: center;
+      gap: 24px;
       z-index: 150;
       flex-wrap: wrap;
     }
     .player-bar.active { display: flex; }
-    .player-track-info { flex: 1; min-width: 140px; }
-    .player-name { font-weight: 700; font-size: 0.9rem; }
-    .player-artist { color: var(--muted); font-size: 0.78rem; }
-    .player-controls { display: flex; align-items: center; gap: 16px; }
+    .player-info { flex: 1; min-width: 140px; }
+    .player-title { font-weight: 700; font-size: 0.9rem; }
+    .player-artist { color: var(--text-secondary); font-size: 0.8rem; }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     .player-btn {
-      background: none; border: none; color: var(--text);
-      font-size: 1.1rem; cursor: pointer;
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 50%;
-      transition: background .2s;
+      transition: var(--transition-default);
     }
-    .player-btn:hover { background: rgba(155,93,229,.2); }
-    .player-btn.main {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    .player-btn:hover { background: rgba(139,92,246,0.12); color: var(--text-primary); }
+    .player-btn.play-main {
+      background: var(--gradient-main);
       color: #fff;
-      width: 44px; height: 44px;
+      width: 48px;
+      height: 48px;
       font-size: 1.2rem;
+      box-shadow: 0 4px 20px rgba(139,92,246,0.3);
     }
+    .player-btn.play-main:hover { transform: scale(1.05); }
     .player-progress {
-      flex: 2; min-width: 120px;
+      flex: 2;
+      min-width: 100px;
       height: 4px;
-      background: var(--border);
+      background: var(--border-subtle);
       border-radius: 2px;
       overflow: hidden;
+      cursor: pointer;
     }
     .player-progress-fill {
       height: 100%;
-      width: 35%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%;
+      background: var(--gradient-main);
       border-radius: 2px;
-      animation: progress 8s linear infinite;
+      transition: width 0.1s linear;
     }
-    @keyframes progress { from { width: 0% } to { width: 100% } }
 
+    /* ── STATUS MESSAGE ── */
     .grid-status {
       grid-column: 1 / -1;
       text-align: center;
-      padding: 48px 20px;
-      color: var(--muted);
+      padding: 60px 20px;
+      color: var(--text-secondary);
     }
-    .grid-status .spin {
-      width: 28px; height: 28px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
+    .grid-status .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-subtle);
+      border-top-color: var(--accent-purple);
       border-radius: 50%;
-      margin: 0 auto 14px;
-      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+      animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 600px) {
-      nav { padding: 14px 20px; }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
       .nav-links { display: none; }
-      .hero { padding: 70px 20px 60px; }
-      section { padding: 48px 20px; }
-      .spotlight { padding: 28px 20px; }
-      .stats-bar { gap: 32px; padding: 24px 20px; }
+      .nav-links.mobile-open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-primary);
+        padding: 24px;
+        gap: 16px;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .menu-toggle { display: flex; }
+      .hero { padding: 120px 0 60px; }
+      .hero h1 { font-size: clamp(2.8rem, 10vw, 4.5rem); }
+      .stats-bar { gap: 32px; padding: 20px 0; }
+      .spotlight { padding: 28px 24px; flex-direction: column; text-align: center; }
+      .spotlight-info p { max-width: 100%; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .player-bar { padding: 12px 16px; gap: 12px; }
+      .player-progress { min-width: 60px; }
+      .tracks-grid { grid-template-columns: 1fr; }
+      .hit-song { padding: 20px; flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 0 16px; }
+      .hero-actions .btn-primary, .hero-actions .btn-secondary { width: 100%; text-align: center; }
+      .track-actions button { padding: 4px 10px; font-size: 0.7rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">Ntcheu Got Talent</div>
-  <div class="nav-links">
-    <a href="#tracks">Music</a>
-    <a href="#artist">Artist</a>
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo">Ntcheu Got Talent</a>
+    <div class="nav-links" id="navLinks">
+      <a href="#tracks">Browse</a>
+      <a href="#artist">Artist</a>
+      <a href="#tracks" class="nav-cta">🎧 Listen Now</a>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-tag">🎵 Malawi's Rising Sound</div>
-  <h1>Ntcheu<br>Got Talent</h1>
-  <p class="hero-sub">
-    Discover and download fresh music from <span>Carbon Es</span> and the best local artists.
-    Stream free. Download free. Support the culture.
-  </p>
-  <div class="hero-cta">
-    <button class="btn-primary" onclick="document.getElementById('tracks').scrollIntoView({behavior:'smooth'})">Browse Music</button>
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">🎵 Malawi's Rising Sound</div>
+    <h1>Ntcheu <br><span>Got Talent</span></h1>
+    <p class="hero-sub">
+      Discover and download fresh music from <strong>Carbon Es</strong> and the best local artists.<br>
+      Stream free. Download free. Support the culture.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('tracks').scrollIntoView({behavior:'smooth'})">Explore Music</button>
+      <button class="btn-secondary" onclick="document.getElementById('artist').scrollIntoView({behavior:'smooth'})">Meet the Artist</button>
+    </div>
   </div>
-</div>
+</section>
 
-<!-- STATS -->
+<!-- ─── STATS ─── -->
 <div class="stats-bar">
-  <div class="stat"><div class="stat-num" id="statTracks">—</div><div class="stat-label">Tracks</div></div>
-  <div class="stat"><div class="stat-num" id="statArtists">—</div><div class="stat-label">Artists</div></div>
-  <div class="stat"><div class="stat-num" id="statGenres">—</div><div class="stat-label">Genres</div></div>
-  <div class="stat"><div class="stat-num">Free</div><div class="stat-label">Always</div></div>
+  <div class="stat-item"><div class="stat-number" id="statTracks">—</div><div class="stat-label">Tracks</div></div>
+  <div class="stat-item"><div class="stat-number" id="statArtists">—</div><div class="stat-label">Artists</div></div>
+  <div class="stat-item"><div class="stat-number" id="statGenres">—</div><div class="stat-label">Genres</div></div>
+  <div class="stat-item"><div class="stat-number">∞</div><div class="stat-label">Free Downloads</div></div>
 </div>
 
-<!-- ARTIST SPOTLIGHT -->
-<section id="artist" style="padding-top:48px">
-  <div class="section-header">
-    <div class="section-title">⭐ Artist <span>Spotlight</span></div>
-  </div>
-  <div class="spotlight">
-    <div class="spotlight-avatar">🎤</div>
-    <div class="spotlight-info">
-      <h3 id="featuredArtistName">Carbon Es</h3>
-      <div class="tag">Featured Artist</div>
-      <p id="featuredArtistBio">Ntcheu's own — bringing raw, authentic sound that blends local rhythms with modern flows.</p>
+<!-- ─── ARTIST SPOTLIGHT ─── -->
+<section id="artist" style="padding-top: 60px;">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">⭐ Artist <span class="highlight">Spotlight</span></div>
+    </div>
+    <div class="spotlight">
+      <div class="spotlight-avatar">🎤</div>
+      <div class="spotlight-info">
+        <h3 id="featuredArtistName">Carbon Es</h3>
+        <div class="badge">Featured Artist</div>
+        <p id="featuredArtistBio">Ntcheu's own — bringing raw, authentic sound that blends local rhythms with modern flows. A voice for the new generation.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- HIT SONG -->
-<section id="hitSongSection" style="display:none">
-  <div class="section-header">
-    <div class="section-title">🏆 Hit <span>Song</span></div>
+<!-- ─── HIT SONG ─── -->
+<section id="hitSongSection" style="display: none; padding-top: 40px;">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">🏆 Hit <span class="highlight">Song</span></div>
+    </div>
+    <div class="hit-song" id="hitSongCard"></div>
   </div>
-  <div class="hit-song-card" id="hitSongCard"></div>
 </section>
 
-<!-- TRACKS -->
-<section id="tracks">
-  <div class="section-header">
-    <div class="section-title">🎵 Latest <span>Tracks</span></div>
-  </div>
-  <input type="text" id="searchInput" class="search-input" placeholder="Search by title, artist, or genre…" oninput="handleSearch(this.value)"/>
-  <div class="tracks-grid" id="tracksGrid">
-    <div class="grid-status" id="gridStatus">
-      <div class="spin"></div>
-      Loading tracks…
+<!-- ─── TRACKS ─── -->
+<section id="tracks" style="padding-top: 60px;">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-title">🎵 Latest <span class="highlight">Tracks</span></div>
+      <a href="#" class="section-link" id="viewAllLink">View all →</a>
+    </div>
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search by title, artist, or genre…" oninput="handleSearch(this.value)" />
+    </div>
+    <div class="tracks-grid" id="tracksGrid">
+      <div class="grid-status">
+        <div class="spinner"></div>
+        Loading tracks…
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
+<!-- ─── FOOTER ─── -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-col footer-brand">
-      <div class="footer-logo">Ntcheu Got Talent</div>
-      <p id="siteDescription">Ntcheu Got Talent is a home for Malawi's rising artists — discover, stream, and download fresh music, free, always.</p>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">Ntcheu Got Talent</div>
+        <p id="siteDescription">Ntcheu Got Talent is a home for Malawi's rising artists — discover, stream, and download fresh music, free, always.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="#">TikTok</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><span style="color:var(--text-secondary);font-size:0.85rem;" id="contactInfo">—</span></li>
+          <li><a href="mailto:hello@ntcheugottalent.com">Email Us</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="footer-col">
-      <div class="footer-heading">Contact</div>
-      <p id="contactInfo">—</p>
+    <div class="footer-bottom">
+      Made with ❤️ for Ntcheu · All tracks free to download · © 2026
     </div>
-  </div>
-  <div class="footer-bottom">
-    Made with ❤️ for Ntcheu · All tracks free to download · © 2026
   </div>
 </footer>
 
+<!-- ─── AUDIO PLAYER ─── -->
 <audio id="audioEl" preload="metadata"></audio>
-
-
-<!-- PLAYER BAR -->
 <div class="player-bar" id="playerBar">
-  <div class="player-track-info">
-    <div class="player-name" id="playerName">—</div>
+  <div class="player-info">
+    <div class="player-title" id="playerTitle">—</div>
     <div class="player-artist" id="playerArtist">—</div>
   </div>
   <div class="player-controls">
-    <button class="player-btn">⏮</button>
-    <button class="player-btn main" id="playPauseBtn" onclick="togglePlay()">⏸</button>
-    <button class="player-btn">⏭</button>
+    <button class="player-btn" id="prevBtn" title="Previous">⏮</button>
+    <button class="player-btn play-main" id="playPauseBtn" onclick="togglePlay()">▶</button>
+    <button class="player-btn" id="nextBtn" title="Next">⏭</button>
   </div>
-  <div class="player-progress">
+  <div class="player-progress" id="progressContainer">
     <div class="player-progress-fill" id="progressFill"></div>
   </div>
   <button class="player-btn" onclick="closePlayer()" title="Close">✕</button>
 </div>
 
 <script>
-  // ── SUPABASE SETUP ──
+  // ── SUPABASE ──
   const SUPABASE_URL = 'https://qlcnrssinldjpxqhbajp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_pnuLHk7AG5pIlYynbDVV7Q_AnPPzwQl';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const TABLE = 'tracks';
 
-  const gradients = ['grad-1','grad-2','grad-3','grad-4','grad-5','grad-6'];
-  const emojis = ['🎵','🎶','🎤','🎸','🥁','🎹','🎺','🎻'];
-
-  let playing = false;
-  let currentTrack = null;
   let allTracks = [];
+  let currentTrack = null;
+  let currentPlaylist = [];
+  let currentIndex = -1;
+  let isPlaying = false;
 
   const audioEl = document.getElementById('audioEl');
+  const playerBar = document.getElementById('playerBar');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const progressFill = document.getElementById('progressFill');
+  const progressContainer = document.getElementById('progressContainer');
 
-  // ── SITE SETTINGS ──
+  // ── NAV SCROLL ──
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ── MOBILE MENU ──
+  document.getElementById('menuToggle').addEventListener('click', function() {
+    this.classList.toggle('active');
+    document.getElementById('navLinks').classList.toggle('mobile-open');
+  });
+
+  // ── LOAD SETTINGS ──
   async function loadSettings() {
     try {
       const { data, error } = await sb.from('site_settings').select('*').eq('id', 1).single();
       if (error) throw error;
-      applySettings(data);
-      return data;
+      if (data) {
+        if (data.featured_artist) document.getElementById('featuredArtistName').textContent = data.featured_artist;
+        if (data.featured_artist_bio) document.getElementById('featuredArtistBio').textContent = data.featured_artist_bio;
+        if (data.site_description) document.getElementById('siteDescription').textContent = data.site_description;
+        if (data.contact_info) document.getElementById('contactInfo').textContent = data.contact_info;
+        else document.getElementById('contactInfo').textContent = 'Reach out through our socials.';
+        return data;
+      }
     } catch (err) {
-      console.error('Failed to load site settings (using defaults):', err.message);
-      return null;
+      console.warn('Settings load failed, using defaults:', err.message);
     }
-  }
-
-  function applySettings(settings) {
-    if (!settings) return;
-    if (settings.featured_artist) {
-      document.getElementById('featuredArtistName').textContent = settings.featured_artist;
-    }
-    if (settings.featured_artist_bio) {
-      document.getElementById('featuredArtistBio').textContent = settings.featured_artist_bio;
-    }
-    if (settings.site_description) {
-      document.getElementById('siteDescription').textContent = settings.site_description;
-    }
-    if (settings.contact_info) {
-      document.getElementById('contactInfo').textContent = settings.contact_info;
-    } else {
-      document.getElementById('contactInfo').textContent = 'Reach out through our socials.';
-    }
-  }
-
-  function renderHitSong(settings) {
-    const section = document.getElementById('hitSongSection');
-    const card = document.getElementById('hitSongCard');
-    if (!settings || !settings.hit_song_id) { section.style.display = 'none'; return; }
-
-    const track = allTracks.find(t => String(t.id) === String(settings.hit_song_id));
-    if (!track) { section.style.display = 'none'; return; }
-
-    const coverInner = track.artwork_url
-      ? `<img src="${track.artwork_url}" alt="${escapeHtml(track.title)} artwork"/>`
-      : '🏆';
-
-    card.innerHTML = `
-      <div class="hit-song-cover grad-5">${coverInner}</div>
-      <div class="hit-song-info">
-        <div class="hit-song-badge">🏆 Hit Song</div>
-        <div class="hit-song-title">${escapeHtml(track.title)}</div>
-        <div class="hit-song-artist">${escapeHtml(track.artist)}</div>
-      </div>
-      <div class="hit-song-actions">
-        <button class="download-btn" id="hitPlayBtn">▶ Play</button>
-        <button class="download-btn" id="hitDownloadBtn">⬇ Download</button>
-      </div>`;
-
-    card.querySelector('#hitPlayBtn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      playTrack(track);
-    });
-    card.querySelector('#hitDownloadBtn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      downloadTrack(track.file_url, track.title, e.currentTarget);
-    });
-    card.onclick = () => playTrack(track);
-
-    section.style.display = 'block';
+    return null;
   }
 
   // ── LOAD TRACKS ──
   async function loadTracks() {
     const grid = document.getElementById('tracksGrid');
     try {
-      const [{ data, error }, settings] = await Promise.all([
+      const [tracksResult, settings] = await Promise.all([
         sb.from(TABLE).select('*').order('created_at', { ascending: false }),
-        loadSettings(),
+        loadSettings()
       ]);
+      if (tracksResult.error) throw tracksResult.error;
 
-      if (error) throw error;
-
-      allTracks = data || [];
+      allTracks = tracksResult.data || [];
       renderStats(allTracks);
       renderTracks(allTracks);
-      renderHitSong(settings);
-      handleSharedLink();
-
+      renderHitSong(settings, allTracks);
+      handleSharedLink(allTracks);
     } catch (err) {
       console.error('Failed to load tracks:', err);
       grid.innerHTML = `
         <div class="grid-status">
-          ⚠️ Couldn't load tracks. Check your Supabase table/bucket setup.<br>
-          <span style="font-size:0.75rem">${escapeHtml(err.message || String(err))}</span>
+          <span style="font-size:2rem;display:block;margin-bottom:12px;">⚠️</span>
+          Couldn't load tracks. Please try again later.<br>
+          <span style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(err.message || String(err))}</span>
         </div>`;
     }
   }
 
+  // ── RENDER STATS ──
   function renderStats(data) {
-    const tracksEl = document.getElementById('statTracks');
-    const artistsEl = document.getElementById('statArtists');
-    const genresEl = document.getElementById('statGenres');
-    if (!data) { tracksEl.textContent = '0'; artistsEl.textContent = '0'; genresEl.textContent = '0'; return; }
-    tracksEl.textContent = data.length;
-    artistsEl.textContent = new Set(data.map(t => (t.artist || '').trim().toLowerCase()).filter(Boolean)).size;
-    genresEl.textContent = new Set(data.map(t => (t.genre || '').trim().toLowerCase()).filter(Boolean)).size;
+    document.getElementById('statTracks').textContent = data.length;
+    const artists = new Set(data.map(t => (t.artist || '').trim().toLowerCase()).filter(Boolean));
+    document.getElementById('statArtists').textContent = artists.size;
+    const genres = new Set(data.map(t => (t.genre || '').trim().toLowerCase()).filter(Boolean));
+    document.getElementById('statGenres').textContent = genres.size;
   }
 
+  // ── RENDER TRACKS ──
   function renderTracks(list) {
     const grid = document.getElementById('tracksGrid');
-
     if (!list || list.length === 0) {
       const isSearch = document.getElementById('searchInput').value.trim().length > 0;
       grid.innerHTML = `
         <div class="grid-status">
-          ${isSearch ? '🔍 No tracks match your search.' : '🎤 No tracks yet — be the first to upload one below!'}
+          ${isSearch ? '🔍 No tracks match your search.' : '🎤 No tracks yet — stay tuned for fresh drops!'}
         </div>`;
       return;
     }
-
     grid.innerHTML = '';
-    list.forEach((track, i) => grid.appendChild(buildTrackCard(track, i)));
+    list.forEach((track, i) => {
+      const card = buildTrackCard(track, i);
+      grid.appendChild(card);
+    });
+  }
+
+  // ── BUILD TRACK CARD ──
+  function buildTrackCard(track, index) {
+    const coverContent = track.artwork_url
+      ? `<img src="${track.artwork_url}" alt="${escapeHtml(track.title)} artwork" loading="lazy"/>`
+      : '🎵';
+
+    const card = document.createElement('div');
+    card.className = 'track-card';
+    card.dataset.trackId = track.id;
+    card.addEventListener('click', () => playTrack(track, allTracks));
+
+    card.innerHTML = `
+      <div class="track-cover">
+        ${coverContent}
+        <div class="play-overlay"><div class="play-btn-circle">▶</div></div>
+      </div>
+      <div class="track-info">
+        <div class="track-title">
+          ${escapeHtml(track.title)}
+          ${track.is_verified ? '<span class="verified">Verified</span>' : ''}
+        </div>
+        <div class="track-artist">${escapeHtml(track.artist)}</div>
+        <div class="track-meta">
+          <span class="track-genre">${escapeHtml(track.genre || 'Music')}</span>
+          <div class="track-actions">
+            <button data-action="copy" title="Copy share link">🔗 Share</button>
+            <button data-action="download" title="Download track">⬇ Download</button>
+          </div>
+        </div>
+      </div>`;
+
+    card.querySelector('[data-action="download"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadTrack(track.file_url, track.title);
+    });
+    card.querySelector('[data-action="copy"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      copyShareLink(track);
+    });
+    return card;
+  }
+
+  // ── HIT SONG ──
+  function renderHitSong(settings, tracks) {
+    const section = document.getElementById('hitSongSection');
+    const card = document.getElementById('hitSongCard');
+    if (!settings || !settings.hit_song_id) { section.style.display = 'none'; return; }
+
+    const track = tracks.find(t => String(t.id) === String(settings.hit_song_id));
+    if (!track) { section.style.display = 'none'; return; }
+
+    const coverContent = track.artwork_url
+      ? `<img src="${track.artwork_url}" alt="${escapeHtml(track.title)} artwork"/>`
+      : '🏆';
+
+    card.innerHTML = `
+      <div class="hit-song-cover">${coverContent}</div>
+      <div class="hit-song-info">
+        <div class="hit-song-badge">🏆 Hit Song</div>
+        <div class="hit-song-title">${escapeHtml(track.title)}</div>
+        <div class="hit-song-artist">${escapeHtml(track.artist)}</div>
+      </div>
+      <div class="hit-song-actions">
+        <button class="btn-primary" id="hitPlayBtn" style="padding: 10px 24px; font-size: 0.85rem;">▶ Play</button>
+        <button class="btn-secondary" id="hitDownloadBtn" style="padding: 10px 24px; font-size: 0.85rem;">⬇ Download</button>
+      </div>`;
+
+    card.querySelector('#hitPlayBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      playTrack(track, allTracks);
+    });
+    card.querySelector('#hitDownloadBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadTrack(track.file_url, track.title);
+    });
+    card.addEventListener('click', () => playTrack(track, allTracks));
+    section.style.display = 'block';
   }
 
   // ── SEARCH ──
@@ -739,168 +1050,172 @@
       (t.genre || '').toLowerCase().includes(q)
     );
     renderTracks(filtered);
-  }
-
-  function buildTrackCard(track, i) {
-    const g = gradients[i % gradients.length];
-    const emoji = emojis[i % emojis.length];
-    const coverInner = track.artwork_url
-      ? `<img src="${track.artwork_url}" alt="${escapeHtml(track.title)} artwork" loading="lazy"/>`
-      : emoji;
-
-    const card = document.createElement('div');
-    card.className = 'track-card';
-    card.dataset.trackId = track.id;
-    card.onclick = () => playTrack(track);
-    card.innerHTML = `
-      <div class="track-cover ${track.artwork_url ? '' : g}">
-        ${coverInner}
-        <div class="play-overlay"><div class="play-btn-big">▶</div></div>
-      </div>
-      <div class="track-info">
-        <div class="track-name">${escapeHtml(track.title)}</div>
-        <div class="track-artist">${escapeHtml(track.artist)}</div>
-        <div class="track-meta">
-          <span class="track-genre">${escapeHtml(track.genre || 'Music')}</span>
-          <div class="track-actions">
-            <button class="copy-btn">🔗 Copy Link</button>
-            <button class="download-btn">⬇ Download</button>
-          </div>
-        </div>
-      </div>`;
-    card.querySelector('.download-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      downloadTrack(track.file_url, track.title, e.currentTarget);
-    });
-    card.querySelector('.copy-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      copyLink(track, e.currentTarget);
-    });
-    return card;
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str ?? '';
-    return div.innerHTML;
+    document.getElementById('viewAllLink').style.display = q ? 'none' : 'inline-flex';
   }
 
   // ── SHARE LINK ──
-  function copyLink(track, btnEl) {
+  function copyShareLink(track) {
     const url = `${window.location.origin}/?track=${track.id}`;
-    const original = btnEl.textContent;
-
-    const fallback = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard!'));
+    } else {
       const temp = document.createElement('input');
       temp.value = url;
       document.body.appendChild(temp);
       temp.select();
       document.execCommand('copy');
       temp.remove();
-    };
-
-    const done = () => {
-      btnEl.textContent = '✓ Copied!';
-      setTimeout(() => { btnEl.textContent = original; }, 2000);
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(done).catch(() => { fallback(); done(); });
-    } else {
-      fallback();
-      done();
+      showToast('Link copied to clipboard!');
     }
   }
 
-  function handleSharedLink() {
+  // ── TOAST ──
+  function showToast(msg) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    Object.assign(toast.style, {
+      position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)',
+      background: 'rgba(8,8,14,0.95)', color: '#fff', padding: '12px 28px',
+      borderRadius: '30px', fontSize: '0.9rem', zIndex: '999',
+      border: '1px solid var(--border-subtle)', backdropFilter: 'blur(12px)',
+      fontFamily: 'Space Grotesk, sans-serif', boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+    });
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  // ── SHARED LINK HANDLER ──
+  function handleSharedLink(tracks) {
     const params = new URLSearchParams(window.location.search);
     const trackId = params.get('track');
-    if (!trackId) return;
+    if (!trackId || !tracks.length) return;
 
-    const track = allTracks.find(t => String(t.id) === String(trackId));
+    const track = tracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
 
-    const card = document.querySelector(`[data-track-id="${trackId}"]`);
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    // Browsers often block autoplay with sound until the user interacts —
-    // this loads the track into the player bar ready to go.
-    document.getElementById('playerName').textContent = track.title;
-    document.getElementById('playerArtist').textContent = track.artist;
-    document.getElementById('playerBar').classList.add('active');
-    audioEl.src = track.file_url;
-    currentTrack = track;
-    audioEl.play().then(() => {
-      playing = true;
-      document.getElementById('playPauseBtn').textContent = '⏸';
-    }).catch(() => {
-      playing = false;
-      document.getElementById('playPauseBtn').textContent = '▶';
-    });
+    setTimeout(() => {
+      const card = document.querySelector(`[data-track-id="${trackId}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      playTrack(track, tracks);
+    }, 500);
   }
 
   // ── PLAYBACK ──
-  function playTrack(track) {
+  function playTrack(track, playlist) {
+    if (!track.file_url) { showToast('⚠️ No audio file available for this track.'); return; }
+
     currentTrack = track;
-    document.getElementById('playerName').textContent = track.title;
+    currentPlaylist = playlist || allTracks;
+    currentIndex = currentPlaylist.findIndex(t => t.id === track.id);
+
+    document.getElementById('playerTitle').textContent = track.title;
     document.getElementById('playerArtist').textContent = track.artist;
-    document.getElementById('playerBar').classList.add('active');
+    playerBar.classList.add('active');
 
     audioEl.src = track.file_url;
-    audioEl.play().catch(err => console.error('Playback error:', err));
-    playing = true;
-    document.getElementById('playPauseBtn').textContent = '⏸';
+    audioEl.play().then(() => {
+      isPlaying = true;
+      playPauseBtn.textContent = '⏸';
+    }).catch(err => {
+      console.warn('Playback prevented by browser:', err.message);
+      isPlaying = false;
+      playPauseBtn.textContent = '▶';
+    });
   }
 
   function togglePlay() {
     if (!currentTrack) return;
-    if (playing) {
+    if (isPlaying) {
       audioEl.pause();
     } else {
-      audioEl.play().catch(err => console.error('Playback error:', err));
+      audioEl.play().catch(err => console.warn('Playback error:', err));
     }
-    playing = !playing;
-    document.getElementById('playPauseBtn').textContent = playing ? '⏸' : '▶';
+    isPlaying = !isPlaying;
+    playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
   }
 
   audioEl.addEventListener('timeupdate', () => {
     if (!audioEl.duration) return;
     const pct = (audioEl.currentTime / audioEl.duration) * 100;
-    const fill = document.getElementById('progressFill');
-    fill.style.animation = 'none';
-    fill.style.width = pct + '%';
+    progressFill.style.width = pct + '%';
   });
 
   audioEl.addEventListener('ended', () => {
-    playing = false;
-    document.getElementById('playPauseBtn').textContent = '▶';
+    isPlaying = false;
+    playPauseBtn.textContent = '▶';
+    // Auto-advance to next track if available
+    if (currentIndex >= 0 && currentIndex < currentPlaylist.length - 1) {
+      playTrack(currentPlaylist[currentIndex + 1], currentPlaylist);
+    } else {
+      closePlayer();
+    }
   });
 
+  // ── PROGRESS BAR CLICK ──
+  progressContainer.addEventListener('click', (e) => {
+    if (!audioEl.duration) return;
+    const rect = progressContainer.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    audioEl.currentTime = pct * audioEl.duration;
+  });
+
+  // ── CLOSE PLAYER ──
   function closePlayer() {
     audioEl.pause();
-    playing = false;
-    document.getElementById('playerBar').classList.remove('active');
+    isPlaying = false;
+    playerBar.classList.remove('active');
+    currentTrack = null;
+    playPauseBtn.textContent = '▶';
+    progressFill.style.width = '0%';
   }
 
   // ── DOWNLOAD ──
-  function downloadTrack(url, filename, btnEl) {
+  function downloadTrack(url, filename) {
+    if (!url) { showToast('⚠️ No download URL available.'); return; }
     const a = document.createElement('a');
-    a.href = url + (url.includes('?') ? '&' : '?') + 'download';
+    a.href = url + (url.includes('?') ? '&' : '?') + 'download=1';
     a.target = '_blank';
     a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
     a.remove();
+    showToast(`⬇ Downloading "${filename}"…`);
+  }
 
-    if (btnEl) {
-      const original = btnEl.textContent;
-      btnEl.textContent = '✓ Done!';
-      btnEl.style.color = '#2dbe6c';
-      setTimeout(() => {
-        btnEl.textContent = original;
-        btnEl.style.color = '';
-      }, 2000);
+  // ── NEXT / PREV ──
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentIndex >= 0 && currentIndex < currentPlaylist.length - 1) {
+      playTrack(currentPlaylist[currentIndex + 1], currentPlaylist);
     }
+  });
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentIndex > 0) {
+      playTrack(currentPlaylist[currentIndex - 1], currentPlaylist);
+    }
+  });
+
+  // ── KEYBOARD SHORTCUTS ──
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+    if (e.code === 'ArrowRight' && e.ctrlKey) {
+      e.preventDefault();
+      document.getElementById('nextBtn').click();
+    }
+    if (e.code === 'ArrowLeft' && e.ctrlKey) {
+      e.preventDefault();
+      document.getElementById('prevBtn').click();
+    }
+  });
+
+  // ── UTILITY ──
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
   }
 
   // ── INIT ──
