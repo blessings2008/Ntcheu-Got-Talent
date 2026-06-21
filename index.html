@@ -306,7 +306,7 @@
     /* ── SEARCH ── */
     .search-wrapper {
       position: relative;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
     .search-wrapper input {
       width: 100%;
@@ -331,6 +331,58 @@
       font-size: 1.1rem;
       pointer-events: none;
     }
+
+    /* ── ARTIST SPOTLIGHT (NEW) ── */
+    .artist-spotlight {
+      margin-bottom: 32px;
+    }
+    .artist-spotlight h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .artist-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .artist-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 30px;
+      padding: 8px 18px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .artist-chip:hover {
+      border-color: var(--accent-purple);
+      background: rgba(139,92,246,0.08);
+      transform: translateY(-2px);
+    }
+    .artist-chip .count {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .artist-chip.active {
+      border-color: var(--accent-purple);
+      background: rgba(139,92,246,0.15);
+      color: var(--accent-purple);
+    }
+    .filter-clear {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .filter-clear:hover { color: var(--text-primary); }
 
     /* ── TRACKS GRID ── */
     .tracks-grid {
@@ -459,8 +511,8 @@
       color: var(--text-primary);
     }
 
-    /* ── ARTIST SPOTLIGHT ── */
-    .spotlight {
+    /* ── ARTIST SPOTLIGHT (PUBLIC) ── */
+    .spotlight-public {
       background: linear-gradient(145deg, rgba(139,92,246,0.08), rgba(236,72,153,0.05));
       border: 1px solid rgba(139,92,246,0.15);
       border-radius: var(--radius-card);
@@ -469,8 +521,9 @@
       gap: 40px;
       align-items: center;
       flex-wrap: wrap;
+      margin-top: 40px;
     }
-    .spotlight-avatar {
+    .spotlight-public-avatar {
       width: 120px; height: 120px; min-width: 120px;
       background: var(--gradient-main);
       border-radius: 50%;
@@ -480,13 +533,13 @@
       font-size: 3rem;
       box-shadow: 0 8px 32px rgba(139,92,246,0.25);
     }
-    .spotlight-info h3 {
+    .spotlight-public-info h3 {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 2.2rem;
       letter-spacing: 1px;
       margin-bottom: 4px;
     }
-    .spotlight-info .badge {
+    .spotlight-public-info .badge {
       display: inline-block;
       background: rgba(251,191,36,0.12);
       color: var(--accent-gold);
@@ -499,7 +552,7 @@
       border-radius: var(--radius-pill);
       margin-bottom: 12px;
     }
-    .spotlight-info p {
+    .spotlight-public-info p {
       color: var(--text-secondary);
       font-size: 0.9rem;
       line-height: 1.8;
@@ -707,13 +760,15 @@
       .hero { padding: 120px 0 60px; }
       .hero h1 { font-size: clamp(2.8rem, 10vw, 4.5rem); }
       .stats-bar { gap: 32px; padding: 20px 0; }
-      .spotlight { padding: 28px 24px; flex-direction: column; text-align: center; }
-      .spotlight-info p { max-width: 100%; }
+      .spotlight-public { padding: 28px 24px; flex-direction: column; text-align: center; }
+      .spotlight-public-info p { max-width: 100%; }
       .footer-grid { grid-template-columns: 1fr; gap: 32px; }
       .player-bar { padding: 12px 16px; gap: 12px; }
       .player-progress { min-width: 60px; }
       .tracks-grid { grid-template-columns: 1fr; }
       .hit-song { padding: 20px; flex-direction: column; text-align: center; }
+      .artist-grid { gap: 8px; }
+      .artist-chip { font-size: 0.78rem; padding: 6px 14px; }
     }
     @media (max-width: 480px) {
       .container { padding: 0 16px; }
@@ -769,9 +824,9 @@
     <div class="section-header">
       <div class="section-title">⭐ Artist <span class="highlight">Spotlight</span></div>
     </div>
-    <div class="spotlight">
-      <div class="spotlight-avatar">🎤</div>
-      <div class="spotlight-info">
+    <div class="spotlight-public">
+      <div class="spotlight-public-avatar">🎤</div>
+      <div class="spotlight-public-info">
         <h3 id="featuredArtistName">Carbon Es</h3>
         <div class="badge">Featured Artist</div>
         <p id="featuredArtistBio">Ntcheu's own — bringing raw, authentic sound that blends local rhythms with modern flows. A voice for the new generation.</p>
@@ -797,6 +852,14 @@
       <div class="section-title">🎵 Latest <span class="highlight">Tracks</span></div>
       <a href="#" class="section-link" id="viewAllLink">View all →</a>
     </div>
+
+    <!-- ARTIST SPOTLIGHT (FILTER CHIPS) -->
+    <div class="artist-spotlight">
+      <h3>🎤 Artists</h3>
+      <div class="artist-grid" id="artistGrid"></div>
+      <div id="filterStatus" style="margin-top: 8px; font-size: 0.82rem; color: var(--text-muted);"></div>
+    </div>
+
     <div class="search-wrapper">
       <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="Search by title, artist, or genre…" oninput="handleSearch(this.value)" />
@@ -866,6 +929,8 @@
   const TABLE = 'tracks';
 
   let allTracks = [];
+  let filteredTracks = [];
+  let activeArtistFilter = null;
   let currentTrack = null;
   let currentPlaylist = [];
   let currentIndex = -1;
@@ -919,8 +984,10 @@
       if (tracksResult.error) throw tracksResult.error;
 
       allTracks = tracksResult.data || [];
+      filteredTracks = allTracks.slice();
       renderStats(allTracks);
-      renderTracks(allTracks);
+      renderArtistSpotlight(allTracks);
+      renderTracks(filteredTracks);
       renderHitSong(settings, allTracks);
       handleSharedLink(allTracks);
     } catch (err) {
@@ -941,6 +1008,68 @@
     document.getElementById('statArtists').textContent = artists.size;
     const genres = new Set(data.map(t => (t.genre || '').trim().toLowerCase()).filter(Boolean));
     document.getElementById('statGenres').textContent = genres.size;
+  }
+
+  // ── ARTIST SPOTLIGHT (PUBLIC) ──
+  function renderArtistSpotlight(tracks) {
+    const grid = document.getElementById('artistGrid');
+    const status = document.getElementById('filterStatus');
+
+    if (!tracks || tracks.length === 0) {
+      grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No artists yet — stay tuned!</p>';
+      status.textContent = '';
+      return;
+    }
+
+    // Count tracks per artist
+    const artistMap = new Map();
+    tracks.forEach(t => {
+      const name = (t.artist || 'Unknown').trim();
+      artistMap.set(name, (artistMap.get(name) || 0) + 1);
+    });
+
+    // Sort by track count (most popular first)
+    const sortedArtists = Array.from(artistMap.entries())
+      .sort((a, b) => b[1] - a[1]);
+
+    grid.innerHTML = '';
+    sortedArtists.forEach(([name, count]) => {
+      const chip = document.createElement('div');
+      chip.className = 'artist-chip';
+      if (activeArtistFilter === name) chip.classList.add('active');
+      chip.innerHTML = `${escapeHtml(name)} <span class="count">${count}</span>`;
+      chip.addEventListener('click', () => filterByArtist(name));
+      grid.appendChild(chip);
+    });
+
+    // Update status
+    if (activeArtistFilter) {
+      status.innerHTML = `Showing tracks by <strong>${escapeHtml(activeArtistFilter)}</strong> <span class="filter-clear" onclick="clearArtistFilter()">✕ clear filter</span>`;
+    } else {
+      status.textContent = `Showing all ${tracks.length} tracks`;
+    }
+  }
+
+  function filterByArtist(artistName) {
+    if (activeArtistFilter === artistName) {
+      clearArtistFilter();
+      return;
+    }
+    activeArtistFilter = artistName;
+    filteredTracks = allTracks.filter(t => (t.artist || '').trim() === artistName);
+    renderTracks(filteredTracks);
+    renderArtistSpotlight(allTracks);
+    // Update view all link
+    document.getElementById('viewAllLink').style.display = 'none';
+  }
+
+  function clearArtistFilter() {
+    activeArtistFilter = null;
+    filteredTracks = allTracks.slice();
+    renderTracks(filteredTracks);
+    renderArtistSpotlight(allTracks);
+    document.getElementById('viewAllLink').style.display = 'inline-flex';
+    document.getElementById('searchInput').value = '';
   }
 
   // ── RENDER TRACKS ──
@@ -970,7 +1099,7 @@
     const card = document.createElement('div');
     card.className = 'track-card';
     card.dataset.trackId = track.id;
-    card.addEventListener('click', () => playTrack(track, allTracks));
+    card.addEventListener('click', () => playTrack(track, filteredTracks));
 
     card.innerHTML = `
       <div class="track-cover">
@@ -1030,27 +1159,41 @@
 
     card.querySelector('#hitPlayBtn').addEventListener('click', (e) => {
       e.stopPropagation();
-      playTrack(track, allTracks);
+      playTrack(track, filteredTracks);
     });
     card.querySelector('#hitDownloadBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       downloadTrack(track.file_url, track.title);
     });
-    card.addEventListener('click', () => playTrack(track, allTracks));
+    card.addEventListener('click', () => playTrack(track, filteredTracks));
     section.style.display = 'block';
   }
 
   // ── SEARCH ──
   function handleSearch(query) {
     const q = query.trim().toLowerCase();
-    if (!q) { renderTracks(allTracks); return; }
-    const filtered = allTracks.filter(t =>
+    if (!q) {
+      // Reset to current filter state
+      if (activeArtistFilter) {
+        filteredTracks = allTracks.filter(t => (t.artist || '').trim() === activeArtistFilter);
+      } else {
+        filteredTracks = allTracks.slice();
+      }
+      renderTracks(filteredTracks);
+      document.getElementById('viewAllLink').style.display = activeArtistFilter ? 'none' : 'inline-flex';
+      return;
+    }
+    const baseList = activeArtistFilter 
+      ? allTracks.filter(t => (t.artist || '').trim() === activeArtistFilter)
+      : allTracks;
+    const filtered = baseList.filter(t =>
       (t.title || '').toLowerCase().includes(q) ||
       (t.artist || '').toLowerCase().includes(q) ||
       (t.genre || '').toLowerCase().includes(q)
     );
+    filteredTracks = filtered;
     renderTracks(filtered);
-    document.getElementById('viewAllLink').style.display = q ? 'none' : 'inline-flex';
+    document.getElementById('viewAllLink').style.display = 'none';
   }
 
   // ── SHARE LINK ──
@@ -1146,7 +1289,6 @@
   audioEl.addEventListener('ended', () => {
     isPlaying = false;
     playPauseBtn.textContent = '▶';
-    // Auto-advance to next track if available
     if (currentIndex >= 0 && currentIndex < currentPlaylist.length - 1) {
       playTrack(currentPlaylist[currentIndex + 1], currentPlaylist);
     } else {
@@ -1209,6 +1351,15 @@
       e.preventDefault();
       document.getElementById('prevBtn').click();
     }
+  });
+
+  // ── VIEW ALL LINK ──
+  document.getElementById('viewAllLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    clearArtistFilter();
+    document.getElementById('searchInput').value = '';
+    renderTracks(allTracks);
+    document.getElementById('viewAllLink').style.display = 'inline-flex';
   });
 
   // ── UTILITY ──
