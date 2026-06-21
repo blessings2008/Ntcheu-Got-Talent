@@ -38,7 +38,7 @@
       border-radius: 16px;
       padding: 44px;
       width: 100%;
-      max-width: 640px;
+      max-width: 720px;
     }
     .panel-icon {
       width: 64px; height: 64px;
@@ -62,7 +62,7 @@
       margin-bottom: 28px;
     }
     .form-group { display: flex; flex-direction: column; gap: 14px; }
-    input, select {
+    input, select, textarea {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
@@ -74,8 +74,12 @@
       transition: border-color .2s;
       width: 100%;
     }
-    input:focus, select:focus { border-color: var(--accent); }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
     select option { background: var(--surface); }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
 
     .file-drop {
       border: 2px dashed var(--border);
@@ -132,6 +136,11 @@
       font-size: 0.82rem;
       display: none;
     }
+    .success-msg {
+      color: #2dbe6c;
+      font-size: 0.82rem;
+      display: none;
+    }
     .file-name { color: var(--accent); font-size: 0.82rem; display: none; }
 
     .session-bar {
@@ -152,22 +161,6 @@
       text-decoration: none;
     }
     .back-link:hover { color: var(--text); }
-
-    textarea {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 13px 16px;
-      border-radius: 8px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color .2s;
-      width: 100%;
-      resize: vertical;
-      min-height: 80px;
-    }
-    textarea:focus { border-color: var(--accent); }
 
     .tabs {
       display: flex;
@@ -197,12 +190,7 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    .success-msg {
-      color: #2dbe6c;
-      font-size: 0.82rem;
-      display: none;
-    }
-
+    /* ── ADMIN TRACK LIST ── */
     .admin-track-list { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; }
     .admin-track-row {
       display: flex; align-items: center; gap: 12px;
@@ -237,6 +225,61 @@
       white-space: nowrap;
     }
     .delete-btn:hover { background: rgba(255,107,107,.12); border-color: #ff6b6b; }
+
+    /* ── ARTIST SPOTLIGHT (NEW) ── */
+    .spotlight-section {
+      margin-bottom: 32px;
+    }
+    .spotlight-section h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .artist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .artist-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 16px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .artist-chip:hover {
+      border-color: var(--accent);
+      background: rgba(155,93,229,.08);
+      transform: translateY(-2px);
+    }
+    .artist-chip .count {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .artist-chip.active {
+      border-color: var(--accent);
+      background: rgba(155,93,229,.15);
+      color: var(--accent);
+    }
+    .filter-clear {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .filter-clear:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -306,6 +349,13 @@
 
     <!-- TAB: MANAGE TRACKS -->
     <div class="tab-panel" id="manageTab">
+      <!-- ARTIST SPOTLIGHT -->
+      <div class="spotlight-section">
+        <h3>🎤 Artist Spotlight</h3>
+        <div class="artist-grid" id="artistGrid"></div>
+        <div id="filterStatus" style="margin-top: 8px; font-size: 0.82rem; color: var(--muted);"></div>
+      </div>
+
       <p class="subtitle" style="margin-bottom:16px">Delete tracks you no longer want public</p>
       <div class="admin-track-list" id="adminTrackList">
         <p class="subtitle">Loading…</p>
@@ -354,6 +404,9 @@
 
   let selectedFile = null;
   let selectedArtwork = null;
+  let cachedTracks = [];
+  let filteredTracks = [];
+  let activeArtistFilter = null;
 
   // ── AUTH ──
   async function checkAuth() {
@@ -543,6 +596,9 @@
       selectedFile = null;
       selectedArtwork = null;
 
+      // Refresh the admin list
+      await loadAdminData();
+
       setTimeout(() => {
         btn.textContent = 'Upload Track';
         btn.style.background = '';
@@ -565,8 +621,6 @@
   }
 
   // ── TABS ──
-  let cachedTracks = [];
-
   function switchTab(tabId) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -580,13 +634,74 @@
     return div.innerHTML;
   }
 
+  // ── ARTIST SPOTLIGHT ──
+  function renderArtistSpotlight(tracks) {
+    const grid = document.getElementById('artistGrid');
+    const status = document.getElementById('filterStatus');
+
+    if (!tracks || tracks.length === 0) {
+      grid.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">No artists yet — upload your first track!</p>';
+      status.textContent = '';
+      return;
+    }
+
+    // Count tracks per artist
+    const artistMap = new Map();
+    tracks.forEach(t => {
+      const name = (t.artist || 'Unknown').trim();
+      artistMap.set(name, (artistMap.get(name) || 0) + 1);
+    });
+
+    // Sort by track count (most popular first)
+    const sortedArtists = Array.from(artistMap.entries())
+      .sort((a, b) => b[1] - a[1]);
+
+    grid.innerHTML = '';
+    sortedArtists.forEach(([name, count]) => {
+      const chip = document.createElement('div');
+      chip.className = 'artist-chip';
+      if (activeArtistFilter === name) chip.classList.add('active');
+      chip.innerHTML = `${escapeHtml(name)} <span class="count">${count}</span>`;
+      chip.addEventListener('click', () => filterByArtist(name));
+      grid.appendChild(chip);
+    });
+
+    // Update status
+    if (activeArtistFilter) {
+      status.innerHTML = `Showing tracks by <strong>${escapeHtml(activeArtistFilter)}</strong> <span class="filter-clear" onclick="clearArtistFilter()">✕ clear filter</span>`;
+    } else {
+      status.textContent = `Showing all ${tracks.length} tracks`;
+    }
+  }
+
+  function filterByArtist(artistName) {
+    if (activeArtistFilter === artistName) {
+      // Toggle off if same artist clicked
+      clearArtistFilter();
+      return;
+    }
+    activeArtistFilter = artistName;
+    filteredTracks = cachedTracks.filter(t => (t.artist || '').trim() === artistName);
+    renderAdminTrackList(filteredTracks);
+    renderArtistSpotlight(cachedTracks);
+  }
+
+  function clearArtistFilter() {
+    activeArtistFilter = null;
+    filteredTracks = cachedTracks.slice();
+    renderAdminTrackList(filteredTracks);
+    renderArtistSpotlight(cachedTracks);
+  }
+
   // ── LOAD DATA AFTER LOGIN ──
   async function loadAdminData() {
     try {
       const { data, error } = await sb.from('tracks').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       cachedTracks = data || [];
-      renderAdminTrackList(cachedTracks);
+      filteredTracks = cachedTracks.slice();
+      renderAdminTrackList(filteredTracks);
+      renderArtistSpotlight(cachedTracks);
       populateHitSongOptions(cachedTracks);
       await loadSettingsIntoForm();
     } catch (err) {
@@ -597,7 +712,7 @@
   function renderAdminTrackList(tracks) {
     const list = document.getElementById('adminTrackList');
     if (!tracks.length) {
-      list.innerHTML = '<p class="subtitle">No tracks uploaded yet.</p>';
+      list.innerHTML = '<p class="subtitle">No tracks match the current filter.</p>';
       return;
     }
     list.innerHTML = '';
@@ -656,7 +771,9 @@
       }
 
       cachedTracks = cachedTracks.filter(t => t.id !== track.id);
-      renderAdminTrackList(cachedTracks);
+      filteredTracks = filteredTracks.filter(t => t.id !== track.id);
+      renderAdminTrackList(filteredTracks);
+      renderArtistSpotlight(cachedTracks);
       populateHitSongOptions(cachedTracks);
 
     } catch (err) {
