@@ -27,7 +27,7 @@ function escAttr(str) {
     .replace(/>/g, '&gt;');
 }
 
-function renderPage({ title, description, image, url, imageAlt }) {
+function renderPage({ title, description, image, url, imageAlt, imageType = 'image/jpeg', imageWidth = 1200, imageHeight = 1500 }) {
   let html = template;
   html = html.split('{{OG_TITLE}}').join(escAttr(title));
   html = html.split('{{OG_DESC}}').join(escAttr(description));
@@ -38,9 +38,9 @@ function renderPage({ title, description, image, url, imageAlt }) {
         '<meta property="og:image" content="' + escAttr(image) + '"/>',
         '<meta property="og:image:url" content="' + escAttr(image) + '"/>',
         '<meta property="og:image:secure_url" content="' + escAttr(image) + '"/>',
-        '<meta property="og:image:type" content="image/jpeg"/>',
-        '<meta property="og:image:width" content="1200"/>',
-        '<meta property="og:image:height" content="1200"/>',
+        '<meta property="og:image:type" content="' + escAttr(imageType) + '"/>',
+        '<meta property="og:image:width" content="' + imageWidth + '"/>',
+        '<meta property="og:image:height" content="' + imageHeight + '"/>',
         '<meta property="og:image:alt" content="' + escAttr(imageAlt || title) + '"/>',
         '<meta name="twitter:image" content="' + escAttr(image) + '"/>',
         '<meta name="twitter:image:alt" content="' + escAttr(imageAlt || title) + '"/>'
@@ -73,6 +73,26 @@ function fetchBuffer(targetUrl, headers, redirects = 0) {
     req.on('error', reject);
     req.setTimeout(10000, () => req.destroy(new Error('Timeout')));
   });
+}
+
+function getPortraitImageUrl(sourceUrl) {
+  try {
+    const source = new URL(sourceUrl);
+    const objectMarker = '/storage/v1/object/public/';
+    const markerIndex = source.pathname.indexOf(objectMarker);
+    if (markerIndex === -1) return null;
+
+    const objectPath = source.pathname.slice(markerIndex + objectMarker.length);
+    const transformed = new URL('/storage/v1/render/image/public/' + objectPath, source.origin);
+    transformed.searchParams.set('width', '1200');
+    transformed.searchParams.set('height', '1500');
+    transformed.searchParams.set('resize', 'cover');
+    transformed.searchParams.set('quality', '85');
+    transformed.searchParams.set('format', 'origin');
+    return transformed.toString();
+  } catch {
+    return null;
+  }
 }
 
 function fetchJson(targetUrl, headers) {
@@ -128,7 +148,16 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(404, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=300' });
         return res.end('Artwork not found');
       }
-      const image = await fetchBuffer(track.artwork_url);
+      // Request a real 4:5 portrait image from Supabase Storage.
+      // If transformations are unavailable, fall back to the original artwork.
+      const portraitUrl = getPortraitImageUrl(track.artwork_url);
+      let image;
+      try {
+        image = await fetchBuffer(portraitUrl || track.artwork_url);
+      } catch (transformErr) {
+        console.warn('Portrait artwork transform unavailable, using original:', transformErr.message);
+        image = await fetchBuffer(track.artwork_url);
+      }
       res.writeHead(200, {
         'Content-Type': image.contentType,
         'Content-Length': image.body.length,
@@ -157,6 +186,8 @@ const server = http.createServer(async (req, res) => {
             description: `Listen to "${track.title}" by ${track.artist} on Ntcheu Got Talent. Free to stream and download.`,
             image:       baseUrl + '/og-image/' + encodeURIComponent(track.id),
             imageAlt:    track.title + ' by ' + track.artist,
+            imageWidth: 1200,
+            imageHeight: 1500,
             url:         baseUrl + '/?track=' + encodeURIComponent(track.id),
           }));
         }
