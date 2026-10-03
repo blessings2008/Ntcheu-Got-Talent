@@ -36,6 +36,7 @@ function renderPage({ title, description, image, url, imageAlt }) {
   const imageTags = image
     ? [
         '<meta property="og:image" content="' + escAttr(image) + '"/>',
+        '<meta property="og:image:url" content="' + escAttr(image) + '"/>',
         '<meta property="og:image:secure_url" content="' + escAttr(image) + '"/>',
         '<meta property="og:image:type" content="image/jpeg"/>',
         '<meta property="og:image:width" content="1200"/>',
@@ -48,6 +49,32 @@ function renderPage({ title, description, image, url, imageAlt }) {
   html = html.split('{{OG_IMAGE_TAGS}}').join(imageTags);
   return html;
 }
+function fetchBuffer(targetUrl, headers, redirects = 0) {
+  return new Promise((resolve, reject) => {
+    if (redirects > 5) return reject(new Error('Too many redirects'));
+    const req = https.get(targetUrl, { headers }, (res) => {
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+        res.resume();
+        return fetchBuffer(new URL(res.headers.location, targetUrl).toString(), headers, redirects + 1)
+          .then(resolve, reject);
+      }
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          return reject(new Error(`HTTP ${res.statusCode}`));
+        }
+        resolve({
+          body: Buffer.concat(chunks),
+          contentType: res.headers['content-type'] || 'application/octet-stream'
+        });
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(10000, () => req.destroy(new Error('Timeout')));
+  });
+}
+
 function fetchJson(targetUrl, headers) {
   return new Promise((resolve, reject) => {
     const req = https.get(targetUrl, { headers }, (res) => {
@@ -91,6 +118,31 @@ const server = http.createServer(async (req, res) => {
     return res.end(adminTemplate);
   }
 
+  // Same-origin artwork endpoint for social crawlers. This avoids relying on
+  // social platforms being able to fetch Supabase Storage URLs directly.
+  if (parsed.pathname.startsWith('/og-image/')) {
+    const trackId = decodeURIComponent(parsed.pathname.slice('/og-image/'.length));
+    try {
+      const track = await fetchTrack(trackId);
+      if (!track || !track.artwork_url) {
+        res.writeHead(404, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=300' });
+        return res.end('Artwork not found');
+      }
+      const image = await fetchBuffer(track.artwork_url);
+      res.writeHead(200, {
+        'Content-Type': image.contentType,
+        'Content-Length': image.body.length,
+        'Cache-Control': 'public, max-age=86400, s-maxage=604800',
+        'X-Content-Type-Options': 'nosniff',
+      });
+      return res.end(image.body);
+    } catch (err) {
+      console.error('OG image lookup failed:', err.message);
+      res.writeHead(404, { 'Content-Type': 'text/plain', 'Cache-Control': 'public, max-age=300' });
+      return res.end('Artwork unavailable');
+    }
+  }
+
   // Public homepage — inject OG tags per-track when ?track= param present
   if (parsed.pathname === '/') {
     const trackId = parsed.searchParams.get('track');
@@ -103,9 +155,9 @@ const server = http.createServer(async (req, res) => {
           return res.end(renderPage({
             title:       `${track.title} — ${track.artist} | ${SITE_NAME}`,
             description: `Listen to "${track.title}" by ${track.artist} on Ntcheu Got Talent. Free to stream and download.`,
-            image:       track.artwork_url || null,
+            image:       baseUrl + '/og-image/' + encodeURIComponent(track.id),
             imageAlt:    track.title + ' by ' + track.artist,
-            url:         baseUrl + '/?track=' + track.id,
+            url:         baseUrl + '/?track=' + encodeURIComponent(track.id),
           }));
         }
       } catch (err) {
