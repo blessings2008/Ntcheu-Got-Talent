@@ -27,18 +27,27 @@ function escAttr(str) {
     .replace(/>/g, '&gt;');
 }
 
-function renderPage({ title, description, image, url }) {
+function renderPage({ title, description, image, url, imageAlt }) {
   let html = template;
   html = html.split('{{OG_TITLE}}').join(escAttr(title));
   html = html.split('{{OG_DESC}}').join(escAttr(description));
   html = html.split('{{OG_URL}}').join(escAttr(url));
+
   const imageTags = image
-    ? `<meta property="og:image" content="${escAttr(image)}"/>\n  <meta name="twitter:image" content="${escAttr(image)}"/>`
+    ? [
+        '<meta property="og:image" content="' + escAttr(image) + '"/>',
+        '<meta property="og:image:secure_url" content="' + escAttr(image) + '"/>',
+        '<meta property="og:image:type" content="image/jpeg"/>',
+        '<meta property="og:image:width" content="1200"/>',
+        '<meta property="og:image:height" content="1200"/>',
+        '<meta property="og:image:alt" content="' + escAttr(imageAlt || title) + '"/>',
+        '<meta name="twitter:image" content="' + escAttr(image) + '"/>',
+        '<meta name="twitter:image:alt" content="' + escAttr(imageAlt || title) + '"/>'
+      ].join('\\n  ')
     : '';
   html = html.split('{{OG_IMAGE_TAGS}}').join(imageTags);
   return html;
 }
-
 function fetchJson(targetUrl, headers) {
   return new Promise((resolve, reject) => {
     const req = https.get(targetUrl, { headers }, (res) => {
@@ -95,7 +104,8 @@ const server = http.createServer(async (req, res) => {
             title:       `${track.title} — ${track.artist} | ${SITE_NAME}`,
             description: `Listen to "${track.title}" by ${track.artist} on Ntcheu Got Talent. Free to stream and download.`,
             image:       track.artwork_url || null,
-            url:         `${baseUrl}/?track=${track.id}`,
+            imageAlt:    track.title + ' by ' + track.artist,
+            url:         baseUrl + '/?track=' + track.id,
           }));
         }
       } catch (err) {
