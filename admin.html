@@ -368,7 +368,7 @@
           </div>
           <div class="field">
             <label>Genre</label>
-            <select id="trackGenre"><option value="">Select genre</option></select>
+            <input type="text" id="trackGenre" list="genreOptions" placeholder="e.g. Afrobeat" autocomplete="off"/><datalist id="genreOptions"></datalist>
           </div>
           <div class="field">
             <label>Release Date</label>
@@ -383,7 +383,7 @@
           <div class="field">
             <label>Audio File *</label>
             <div class="file-drop" onclick="document.getElementById('audioInput').click()">
-              <input type="file" id="audioInput" accept="audio/mp3,audio/wav,audio/x-m4a,audio/mpeg" style="display:none" onchange="handleAudioFile(this)"/>
+              <input type="file" id="audioInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac" style="display:none" onchange="handleAudioFile(this)"/>
               <div class="file-drop-icon">🎧</div>
               <p><span>Click to choose</span> — MP3, WAV, M4A (max 50MB)</p>
             </div>
@@ -822,56 +822,119 @@
     reader.readAsDataURL(f);
   }
 
-  function sanitize(n) { return n.replace(/[^a-zA-Z0-9.\-_]/g, '_'); }
+  function sanitize(n) {
+    return (n || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
 
-  async function uploadFile(file, prefix, onProgress) {
-    const path = `${prefix}/${Date.now()}_${sanitize(file.name)}`;
+  function getStorageErrorMessage(error, file) {
+    const msg = error?.message || error?.error_description || String(error || 'Unknown error');
+    if (/row-level security|not authorized|permission denied|Unauthorized|403/i.test(msg)) {
+      return 'Upload blocked by Supabase Storage permissions. The tracks bucket needs an INSERT policy for your admin account.';
+    }
+    if (/bucket.*not found|not found.*bucket/i.test(msg)) {
+      return 'The "tracks" storage bucket does not exist in Supabase.';
+    }
+    if (/payload too large|exceed|size/i.test(msg)) {
+      return file ? `"${file.name}" is too large for the current Supabase bucket limit.` : 'The file is too large for the current Supabase bucket limit.';
+    }
+    return msg;
+  }
+
+  async function uploadFile(file, prefix) {
+    if (!file) throw new Error('No file selected.');
+    const ext = sanitize(file.name.split('.').pop() || 'bin').toLowerCase();
+    const base = sanitize(file.name.replace(/\.[^.]+$/, ''));
+    const path = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${base}.${ext}`;
+
     const { error } = await sb.storage.from(BUCKET).upload(path, file, {
-      cacheControl: '3600', upsert: false,
+      cacheControl: '3600',
+      upsert: false,
       contentType: file.type || 'application/octet-stream',
     });
-    if (error) throw error;
-    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+    if (error) throw new Error(getStorageErrorMessage(error, file));
+
+    const { data } = sb.storage.from(BUCKET).getPublicUrl(path);
+    if (!data?.publicUrl) throw new Error('File uploaded, but Supabase did not return a public URL.');
+    return data.publicUrl;
+  }
+
+  async function ensureGenre(name) {
+    const normalized = name.trim().replace(/\s+/g, ' ');
+    if (!normalized) return null;
+
+    const existing = cachedGenres.find(g => (g.name || '').trim().toLowerCase() === normalized.toLowerCase());
+    if (existing) return existing.name;
+
+    const { data, error } = await sb.from('genres')
+      .insert([{ name: normalized }])
+      .select()
+      .single();
+
+    if (error) {
+      const { data: retry } = await sb.from('genres')
+        .select('id,name')
+        .ilike('name', normalized)
+        .limit(1)
+        .maybeSingle();
+      if (retry?.name) return retry.name;
+      throw new Error(`Could not create genre "${normalized}": ${error.message}`);
+    }
+
+    if (data) {
+      cachedGenres = [...cachedGenres, data].sort((x,y) => (x.name || '').localeCompare(y.name || ''));
+      renderGenreList(cachedGenres);
+      populateGenreDropdowns(cachedGenres);
+      return data.name;
+    }
+    return normalized;
   }
 
   async function handleUpload() {
     const btn = document.getElementById('uploadBtn');
     const title = document.getElementById('trackTitle').value.trim();
     const artist = document.getElementById('trackArtist').value.trim();
+    const genreInput = document.getElementById('trackGenre').value.trim();
     hideMsg('uploadError');
+
     if (!title || !artist) { showMsg('uploadError', 'Song title and artist are required.'); return; }
     if (!selectedAudioFile) { showMsg('uploadError', 'Please choose an audio file.'); return; }
 
     btn.disabled = true; btn.textContent = 'Uploading…';
     document.getElementById('uploadProgress').style.display = 'block';
-    document.getElementById('uploadProgressFill').style.width = '25%';
+    document.getElementById('uploadProgressFill').style.width = '15%';
 
     try {
       const fileUrl = await uploadFile(selectedAudioFile, 'audio');
-      document.getElementById('uploadProgressFill').style.width = '65%';
+      document.getElementById('uploadProgressFill').style.width = '55%';
+
       let artworkUrl = null;
-      if (selectedArtworkFile) { artworkUrl = await uploadFile(selectedArtworkFile, 'artwork'); }
-      document.getElementById('uploadProgressFill').style.width = '85%';
+      if (selectedArtworkFile) artworkUrl = await uploadFile(selectedArtworkFile, 'artwork');
+      document.getElementById('uploadProgressFill').style.width = '70%';
+
+      // If the genre is new, create it automatically.
+      const genre = genreInput ? await ensureGenre(genreInput) : null;
+      document.getElementById('uploadProgressFill').style.width = '82%';
 
       const row = {
-        title, artist,
+        title,
+        artist,
         album: document.getElementById('trackAlbum').value.trim() || null,
-        genre: document.getElementById('trackGenre').value || null,
+        genre,
         release_date: document.getElementById('trackDate').value || null,
         description: document.getElementById('trackDesc').value.trim() || null,
         is_featured: document.getElementById('isFeatured').checked,
         is_trending: document.getElementById('isTrending').checked,
         file_url: fileUrl,
         artwork_url: artworkUrl,
-        play_count: 0, download_count: 0,
+        play_count: 0,
+        download_count: 0,
       };
 
       const { data: inserted, error: insertErr } = await sb.from('tracks').insert([row]).select();
-      if (insertErr) throw insertErr;
+      if (insertErr) throw new Error(`Song could not be published: ${insertErr.message}`);
 
       document.getElementById('uploadProgressFill').style.width = '100%';
-
-      if (inserted?.[0]) { cachedTracks = [inserted[0], ...cachedTracks]; }
+      if (inserted?.[0]) cachedTracks = [inserted[0], ...cachedTracks];
       renderMusicTable(cachedTracks);
       renderDash(cachedTracks, cachedArtists);
       populateHitSong(cachedTracks);
@@ -879,7 +942,6 @@
       btn.textContent = '✓ Music uploaded successfully!';
       btn.style.background = 'linear-gradient(135deg,#1a6e3a,#2dbe6c)';
 
-      // Reset form
       ['trackTitle','trackAlbum','trackDate','trackDesc'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('trackArtist').value = '';
       document.getElementById('trackGenre').value = '';
@@ -890,7 +952,9 @@
       document.getElementById('artworkInput').value = '';
       document.getElementById('artworkPreview').innerHTML = '🖼️';
       document.getElementById('previewPlayer').style.display = 'none';
-      selectedAudioFile = null; selectedArtworkFile = null;
+      document.getElementById('previewAudio').removeAttribute('src');
+      selectedAudioFile = null;
+      selectedArtworkFile = null;
 
       setTimeout(() => {
         document.getElementById('uploadProgress').style.display = 'none';
@@ -899,12 +963,12 @@
         btn.style.background = '';
         btn.disabled = false;
       }, 2500);
-
     } catch (err) {
       document.getElementById('uploadProgress').style.display = 'none';
       document.getElementById('uploadProgressFill').style.width = '0%';
-      showMsg('uploadError', err.message || 'Upload failed. Check console.');
-      btn.textContent = 'Publish Song'; btn.disabled = false;
+      showMsg('uploadError', err.message || 'Upload failed.');
+      btn.textContent = 'Publish Song';
+      btn.disabled = false;
     }
   }
 
@@ -1068,10 +1132,11 @@
 
   function populateGenreDropdowns(genres) {
     const upload = document.getElementById('trackGenre');
+    const datalist = document.getElementById('genreOptions');
     const filter = document.getElementById('musicGenreFilter');
     const current = upload.value;
+    datalist.innerHTML = genres.map(g => `<option value="${esc(g.name)}">${esc(g.name)}</option>`).join('');
     const options = genres.map(g => `<option value="${esc(g.name)}">${esc(g.name)}</option>`).join('');
-    upload.innerHTML = '<option value="">Select genre</option>' + options;
     filter.innerHTML = '<option value="">All Genres</option>' + options;
     if (current) upload.value = current;
   }
