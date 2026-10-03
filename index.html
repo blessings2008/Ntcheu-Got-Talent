@@ -739,326 +739,57 @@
     }
     /* ── MOBILE POLISH ── */
     @media (max-width: 600px) {
-      html { scroll-padding-top: 64px; }
-      body { width: 100%; overflow-x: hidden; }
-
-      nav {
-        height: 58px;
-        padding: 0 14px;
-        gap: 10px;
-      }
-      .nav-logo {
-        font-size: 1.08rem;
-        letter-spacing: 1.5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .nav-right { gap: 6px; }
-      .hamburger {
-        display: flex;
-        width: 42px; height: 42px;
-        align-items: center; justify-content: center;
-        font-size: 1.3rem;
-        border-radius: 10px;
-      }
-
-      .hero {
-        min-height: calc(100svh - 58px);
-        padding: 42px 18px 72px;
-        align-items: center;
-      }
-      .hero-inner { width: 100%; }
-      .hero-tag {
-        font-size: .64rem;
-        letter-spacing: 1.6px;
-        padding: 6px 12px;
-        margin-bottom: 20px;
-      }
-      .hero h1 {
-        font-size: clamp(3rem, 15vw, 4.4rem);
-        letter-spacing: 2px;
-      }
-      .hero-sub {
-        font-size: .92rem;
-        line-height: 1.45;
-        max-width: 330px;
-      }
-      .hero p {
-        font-size: .86rem;
-        line-height: 1.65;
-        margin-bottom: 26px;
-        max-width: 100%;
-      }
-      .hero-cta {
-        width: 100%;
-        gap: 10px;
-      }
-      .hero-cta button {
-        flex: 1;
-        min-width: 0;
-        padding: 13px 12px;
-        font-size: .78rem;
-      }
-      .waveform {
-        height: 76px;
-        gap: 2px;
-        padding: 0 10px;
-      }
-
-      .artist-roster { padding: 12px 0; }
-      .roster-track { gap: 28px; }
-      .roster-item { font-size: .72rem; }
-
-      .section {
-        width: 100%;
-        padding: 44px 14px;
-      }
-      .section-header { margin-bottom: 24px; }
-      .section-eyebrow {
-        font-size: .64rem;
-        letter-spacing: 2px;
-      }
-      .section-title {
-        font-size: clamp(1.75rem, 9vw, 2.35rem);
-        letter-spacing: 1.5px;
-      }
-      .section-subtitle {
-        font-size: .78rem;
-        line-height: 1.5;
-      }
-
-      .genre-pills {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        margin: 0 -14px 24px;
-        padding: 2px 14px 8px;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-      }
-      .genre-pills::-webkit-scrollbar { display: none; }
-      .pill {
-        flex: 0 0 auto;
-        padding: 8px 14px;
-        font-size: .74rem;
-        white-space: nowrap;
-      }
-
-      .track-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .track-card { border-radius: 10px; }
-      .track-art-overlay { display: none; }
-      .track-body { padding: 10px; }
-      .track-genre-pill {
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: .58rem;
-        padding: 2px 7px;
-      }
-      .track-name {
-        font-size: .78rem;
-        margin-bottom: 3px;
-      }
-      .track-artist-name {
-        font-size: .68rem;
-        margin-bottom: 9px;
-      }
-      .track-actions {
-        gap: 5px;
-      }
-      .action-btn {
-        padding: 8px 3px;
-        min-height: 34px;
-        font-size: .62rem;
-        border-radius: 7px;
-      }
-
-      .featured-list { gap: 10px; }
-      .featured-card {
-        padding: 12px;
-        gap: 12px;
-        border-radius: 11px;
-      }
-      .featured-cover {
-        width: 58px; height: 58px; min-width: 58px;
-        border-radius: 8px;
-        font-size: 1.35rem;
-      }
-      .featured-badge {
-        top: -4px; right: -4px;
-        font-size: .48rem;
-        padding: 2px 4px;
-      }
-      .featured-title { font-size: .82rem; }
-      .featured-meta { font-size: .68rem; gap: 5px; }
-      .featured-actions { display: flex; gap: 5px; }
-      .featured-actions .icon-btn {
-        width: 34px; height: 34px;
-        font-size: .75rem;
-      }
-
-      #latestTrending {
-        grid-template-columns: 1fr !important;
-        gap: 8px !important;
-        padding: 0 14px 44px !important;
-      }
-      #latestTrending .section-header { margin-bottom: 18px; }
-      #latestTrending .section-title { font-size: 1.45rem !important; }
-
-      .trending-row {
-        gap: 9px;
-        padding: 10px;
-        border-radius: 9px;
-      }
-      .trending-num {
-        width: 22px;
-        font-size: 1rem;
-      }
-      .trending-cover {
-        width: 40px; height: 40px; min-width: 40px;
-      }
-      .trending-title { font-size: .77rem; }
-      .trending-artist, .trending-count { font-size: .66rem; }
-      .trending-play {
-        width: 30px; height: 30px;
-        min-width: 30px;
-      }
-
-      .artist-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .artist-card {
-        padding: 18px 10px;
-        border-radius: 10px;
-      }
-      .artist-avatar {
-        width: 62px; height: 62px;
-        font-size: 1.35rem;
-        margin-bottom: 9px;
-      }
-      .artist-card-name { font-size: .78rem; }
-      .artist-card-meta { font-size: .66rem; }
-
-      .genre-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .genre-card {
-        padding: 18px 10px;
-        border-radius: 10px;
-      }
-      .genre-icon { font-size: 1.5rem; }
-      .genre-card-name { font-size: .76rem; }
-      .genre-count { font-size: .64rem; }
-
-      .cultural-section {
-        padding: 58px 18px;
-      }
-      .cultural-heading {
-        font-size: clamp(1.8rem, 9vw, 2.5rem);
-      }
-      .cultural-text {
-        font-size: .82rem;
-        line-height: 1.7;
-      }
-
-      .about-inner {
-        padding: 24px 18px;
-        border-radius: 12px;
-      }
-      #aboutText { font-size: .84rem !important; }
-
-      .footer-top {
-        grid-template-columns: 1fr;
-        gap: 26px;
-        padding: 34px 16px 26px;
-      }
-      .footer-brand-desc { font-size: .78rem; }
-      .footer-bottom {
-        padding: 16px;
-        flex-direction: column;
-        align-items: flex-start;
-        font-size: .68rem;
-        line-height: 1.6;
-      }
-
-      .search-overlay {
-        padding: 68px 14px 20px;
-      }
-      .search-bar-big {
-        padding: 12px 14px;
-        margin-bottom: 18px;
-        border-radius: 10px;
-      }
-      .search-bar-big input { font-size: .92rem; }
-
-      .share-panel {
-        padding: 22px 14px 28px;
-        border-radius: 18px 18px 0 0;
-      }
-      .share-options { gap: 8px; }
-      .share-option {
-        padding: 13px 8px;
-        min-width: 0;
-      }
-
-      .player {
-        padding: 8px 10px;
-      }
-      .player-inner {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 8px;
-      }
-      .player-track { gap: 8px; }
-      .player-art {
-        width: 38px; height: 38px; min-width: 38px;
-      }
-      .player-title { font-size: .72rem; }
-      .player-artist { font-size: .64rem; }
-      .player-controls {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        width: 100%;
-        flex-direction: row;
-        gap: 8px;
-      }
-      .player-btns { gap: 5px; }
-      .player-btn { width: 28px; height: 28px; font-size: .8rem; }
-      .player-btn.play { width: 36px; height: 36px; }
-      .player-progress-row { max-width: none; flex: 1; }
-      .player-right { display: flex; }
-      .volume-row, .player-dl-btn { display: none; }
-      .player-close {
-        width: 30px; height: 30px;
-      }
-
-      .toast {
-        bottom: 86px;
-        max-width: calc(100vw - 28px);
-        white-space: normal;
-        text-align: center;
-        padding: 10px 16px;
-      }
+      html { scroll-padding-top: 64px; } body { width: 100%; overflow-x: hidden; }
+      nav { height: 58px; padding: 0 14px; gap: 10px; }
+      .nav-logo { font-size: 1.08rem; letter-spacing: 1.5px; overflow: hidden; text-overflow: ellipsis; }
+      .nav-right { gap: 6px; } .hamburger { display:flex; width:42px; height:42px; align-items:center; justify-content:center; font-size:1.3rem; border-radius:10px; }
+      .hero { min-height:calc(100svh - 58px); padding:42px 18px 72px; align-items:center; } .hero-inner { width:100%; }
+      .hero-tag { font-size:.64rem; letter-spacing:1.6px; padding:6px 12px; margin-bottom:20px; }
+      .hero h1 { font-size:clamp(3rem,15vw,4.4rem); letter-spacing:2px; } .hero-sub { font-size:.92rem; line-height:1.45; max-width:330px; }
+      .hero p { font-size:.86rem; line-height:1.65; margin-bottom:26px; max-width:100%; } .hero-cta { width:100%; gap:10px; }
+      .hero-cta button { flex:1; min-width:0; padding:13px 12px; font-size:.78rem; } .waveform { height:76px; gap:2px; padding:0 10px; }
+      .artist-roster { padding:12px 0; } .roster-track { gap:28px; } .roster-item { font-size:.72rem; }
+      .section { width:100%; padding:44px 14px; } .section-header { margin-bottom:24px; }
+      .section-eyebrow { font-size:.64rem; letter-spacing:2px; } .section-title { font-size:clamp(1.75rem,9vw,2.35rem); letter-spacing:1.5px; }
+      .section-subtitle { font-size:.78rem; line-height:1.5; }
+      .genre-pills { flex-wrap:nowrap; overflow-x:auto; margin:0 -14px 24px; padding:2px 14px 8px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+      .genre-pills::-webkit-scrollbar { display:none; } .pill { flex:0 0 auto; padding:8px 14px; font-size:.74rem; white-space:nowrap; }
+      .track-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .track-card { border-radius:10px; }
+      .track-art-overlay { display:none; } .track-body { padding:10px; }
+      .track-genre-pill { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.58rem; padding:2px 7px; }
+      .track-name { font-size:.78rem; margin-bottom:3px; } .track-artist-name { font-size:.68rem; margin-bottom:9px; }
+      .track-actions { gap:5px; } .action-btn { padding:8px 3px; min-height:34px; font-size:.62rem; border-radius:7px; }
+      .featured-list { gap:10px; } .featured-card { padding:12px; gap:12px; border-radius:11px; }
+      .featured-cover { width:58px; height:58px; min-width:58px; border-radius:8px; font-size:1.35rem; }
+      .featured-badge { top:-4px; right:-4px; font-size:.48rem; padding:2px 4px; } .featured-title { font-size:.82rem; }
+      .featured-meta { font-size:.68rem; gap:5px; } .featured-actions { display:flex; gap:5px; }
+      .featured-actions .icon-btn { width:34px; height:34px; font-size:.75rem; }
+      #latestTrending { grid-template-columns:1fr !important; gap:8px !important; padding:0 14px 44px !important; }
+      #latestTrending .section-header { margin-bottom:18px; } #latestTrending .section-title { font-size:1.45rem !important; }
+      .trending-row { gap:9px; padding:10px; border-radius:9px; } .trending-num { width:22px; font-size:1rem; }
+      .trending-cover { width:40px; height:40px; min-width:40px; } .trending-title { font-size:.77rem; }
+      .trending-artist,.trending-count { font-size:.66rem; } .trending-play { width:30px; height:30px; min-width:30px; }
+      .artist-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .artist-card { padding:18px 10px; border-radius:10px; }
+      .artist-avatar { width:62px; height:62px; font-size:1.35rem; margin-bottom:9px; } .artist-card-name { font-size:.78rem; } .artist-card-meta { font-size:.66rem; }
+      .genre-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .genre-card { padding:18px 10px; border-radius:10px; }
+      .genre-icon { font-size:1.5rem; } .genre-card-name { font-size:.76rem; } .genre-count { font-size:.64rem; }
+      .cultural-section { padding:58px 18px; } .cultural-heading { font-size:clamp(1.8rem,9vw,2.5rem); } .cultural-text { font-size:.82rem; line-height:1.7; }
+      .about-inner { padding:24px 18px; border-radius:12px; } #aboutText { font-size:.84rem !important; }
+      .footer-top { grid-template-columns:1fr; gap:26px; padding:34px 16px 26px; } .footer-brand-desc { font-size:.78rem; }
+      .footer-bottom { padding:16px; flex-direction:column; align-items:flex-start; font-size:.68rem; line-height:1.6; }
+      .search-overlay { padding:68px 14px 20px; } .search-bar-big { padding:12px 14px; margin-bottom:18px; border-radius:10px; } .search-bar-big input { font-size:.92rem; }
+      .share-panel { padding:22px 14px 28px; border-radius:18px 18px 0 0; } .share-options { gap:8px; } .share-option { padding:13px 8px; min-width:0; }
+      .player { padding:8px 10px; } .player-inner { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+      .player-track { gap:8px; } .player-art { width:38px; height:38px; min-width:38px; } .player-title { font-size:.72rem; } .player-artist { font-size:.64rem; }
+      .player-controls { grid-column:1/-1; grid-row:2; width:100%; flex-direction:row; gap:8px; } .player-btns { gap:5px; }
+      .player-btn { width:28px; height:28px; font-size:.8rem; } .player-btn.play { width:36px; height:36px; }
+      .player-progress-row { max-width:none; flex:1; } .player-right { display:flex; } .volume-row,.player-dl-btn { display:none; } .player-close { width:30px; height:30px; }
+      .toast { bottom:86px; max-width:calc(100vw - 28px); white-space:normal; text-align:center; padding:10px 16px; }
     }
-
-    @media (max-width: 380px) {
-      .track-grid { gap: 8px; }
-      .track-body { padding: 8px; }
-      .action-btn {
-        font-size: .57rem;
-        padding-left: 1px;
-        padding-right: 1px;
-      }
-      .hero-cta { flex-direction: column; }
-      .hero-cta button { width: 100%; }
-      .featured-card { gap: 9px; padding: 10px; }
-      .featured-cover { width: 52px; height: 52px; min-width: 52px; }
-      .featured-actions { display: none; }
+    @media (max-width:380px) {
+      .track-grid { gap:8px; } .track-body { padding:8px; } .action-btn { font-size:.57rem; padding-left:1px; padding-right:1px; }
+      .hero-cta { flex-direction:column; } .hero-cta button { width:100%; } .featured-card { gap:9px; padding:10px; }
+      .featured-cover { width:52px; height:52px; min-width:52px; } .featured-actions { display:none; }
     }
 
     /* ── GRAD FALLBACKS for cards without artwork ── */
@@ -1222,3 +953,593 @@
     <div class="section-eyebrow">Browse by Category</div>
     <div class="section-title">Explore <span>Genres</span></div>
   </div>
+  <div class="genre-grid" id="genreGrid">
+    <div class="grid-status" style="grid-column:1/-1"><div class="spin"></div></div>
+  </div>
+</div>
+
+<!-- CULTURAL SECTION -->
+<div class="cultural-section">
+  <div class="pattern-bg"></div>
+  <div class="cultural-pattern"></div>
+  <div class="cultural-eyebrow">Angoni Heritage</div>
+  <div class="cultural-heading">Rooted in Culture.<br>Driven by Music.</div>
+  <div class="cultural-divider">
+    <div class="cultural-divider-line"></div>
+    <div class="cultural-divider-diamond"></div>
+    <div class="cultural-divider-line"></div>
+  </div>
+  <div class="cultural-text">
+    Ntcheu Got Talent celebrates the creativity, energy, and musical expression of the people and communities connected to Ntcheu and the Angoni heritage. This is where our stories are told through sound.
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="section" id="about">
+  <div class="section-header">
+    <div class="section-eyebrow">Our Story</div>
+    <div class="section-title">About <span>Ntcheu Got Talent</span></div>
+  </div>
+  <div class="about-inner">
+    <div class="pattern-bg"></div>
+    <p id="aboutText" style="color:var(--muted);line-height:1.8;font-size:0.96rem;position:relative">
+      Ntcheu Got Talent is a platform created to showcase, celebrate, and connect music with the talent and cultural identity of Ntcheu and the Angoni community.
+    </p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="pattern-bg"></div>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand-logo">Ntcheu Got Talent</div>
+      <div class="footer-brand-tag">"The Sound of Ntcheu. The Spirit of Angoni."</div>
+      <div class="footer-brand-desc" id="footerDesc">The home of Malawi's rising music talent, rooted in the culture and spirit of Ntcheu and the Angoni community.</div>
+      <div class="footer-social">
+        <a class="social-icon" href="https://www.facebook.com/NtcheuGotTalent" target="_blank" rel="noopener" title="Facebook">📘</a>
+        <a class="whatsapp-btn" href="https://wa.me/265994997426" target="_blank" rel="noopener">💬 WhatsApp</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Navigation</div>
+      <a href="#home" onclick="navScroll('home')">Home</a>
+      <a href="#music" onclick="navScroll('music')">Music</a>
+      <a href="#artists" onclick="navScroll('artists')">Artists</a>
+      <a href="#genres" onclick="navScroll('genres')">Genres</a>
+      <a href="#about" onclick="navScroll('about')">About</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Contact</div>
+      <p>Contact / Music Submissions</p>
+      <a href="tel:+265994997426">0994997426</a>
+      <a href="https://www.facebook.com/NtcheuGotTalent" target="_blank" rel="noopener">Facebook</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title" id="footerRosterTitle">Artists</div>
+      <div id="footerArtistRoster"></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 Ntcheu Got Talent · All rights reserved · All tracks free to download</div>
+    <div>Website designed &amp; developed by <a href="https://deft-dieffenbachia-6dc00f.netlify.app/#contact" target="_blank" rel="noopener">Tambala Technologies</a></div>
+  </div>
+</footer>
+
+<!-- GLOBAL PLAYER -->
+<div class="player" id="player">
+  <audio id="audioEl" preload="metadata"></audio>
+  <div class="player-inner">
+    <div class="player-track">
+      <div class="player-art g1" id="playerArt">🎵</div>
+      <div>
+        <div class="player-title" id="playerTitle">—</div>
+        <div class="player-artist" id="playerArtist">—</div>
+      </div>
+    </div>
+    <div class="player-controls">
+      <div class="player-btns">
+        <button class="player-btn" id="prevBtn" title="Previous">⏮</button>
+        <button class="player-btn play" id="playPauseBtn" onclick="togglePlay()">▶</button>
+        <button class="player-btn" id="nextBtn" title="Next">⏭</button>
+      </div>
+      <div class="player-progress-row">
+        <span class="player-time" id="currentTime">0:00</span>
+        <div class="player-bar" id="playerBar" onclick="seek(event)">
+          <div class="player-fill" id="playerFill"></div>
+        </div>
+        <span class="player-time" id="totalTime">0:00</span>
+      </div>
+    </div>
+    <div class="player-right">
+      <div class="volume-row">
+        🔊
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)"/>
+      </div>
+      <button class="player-dl-btn" onclick="downloadCurrent()">⬇ Download</button>
+      <button class="player-close" onclick="closePlayer()">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── SUPABASE ──
+  const SUPABASE_URL = 'https://qlcnrssinldjpxqhbajp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_pnuLHk7AG5pIlYynbDVV7Q_AnPPzwQl';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── STATE ──
+  let allTracks = [], filteredTracks = [], allArtists = [], allGenres = [];
+  let activeGenre = 'All', currentIdx = -1, playing = false, currentShareTrack = null;
+  const gradients = ['g1','g2','g3','g4','g5','g6'];
+  const emojis = ['🎵','🎶','🎤','🎸','🥁','🎹'];
+  const audio = document.getElementById('audioEl');
+
+  function esc(str) {
+    const d = document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML;
+  }
+  function fmt(s) {
+    if (!s) return '0:00';
+    const m = Math.floor(s/60), sec = Math.floor(s%60);
+    return `${m}:${sec.toString().padStart(2,'0')}`;
+  }
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // ── WAVEFORM BUILDER ──
+  function buildWaveform() {
+    const wf = document.getElementById('waveform');
+    const bars = 80;
+    for (let i = 0; i < bars; i++) {
+      const b = document.createElement('div');
+      b.className = 'wave-bar';
+      const h = 12 + Math.random() * 55;
+      const d = 0.8 + Math.random() * 1.5;
+      const delay = (Math.random() * 1.2).toFixed(2);
+      b.style.cssText = `--h:${h}px;--d:${d}s;--delay:-${delay}s;height:8px`;
+      wf.appendChild(b);
+    }
+  }
+
+  // ── NAV & MOBILE ──
+  function navScroll(id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+  function openMobileNav() { document.getElementById('mobileNav').classList.add('open'); }
+  function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); }
+
+  // ── SEARCH ──
+  function openSearch() { document.getElementById('searchOverlay').classList.add('open'); setTimeout(() => document.getElementById('searchInput').focus(), 100); }
+  function closeSearch() { document.getElementById('searchOverlay').classList.remove('open'); document.getElementById('searchInput').value = ''; document.getElementById('searchResults').innerHTML = ''; }
+  function handleSearch(q) {
+    const results = document.getElementById('searchResults');
+    const empty = document.getElementById('searchEmpty');
+    q = q.trim().toLowerCase();
+    if (!q) { results.innerHTML = ''; return; }
+    const found = allTracks.filter(t =>
+      (t.title||'').toLowerCase().includes(q) ||
+      (t.artist||'').toLowerCase().includes(q) ||
+      (t.genre||'').toLowerCase().includes(q) ||
+      (t.album||'').toLowerCase().includes(q)
+    );
+    if (!found.length) {
+      results.innerHTML = '';
+      results.appendChild(empty);
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    results.innerHTML = '';
+    found.slice(0,8).forEach(t => {
+      const i = allTracks.indexOf(t);
+      const row = document.createElement('div');
+      row.className = 'search-result-row';
+      const cover = t.artwork_url ? `<img src="${t.artwork_url}" alt=""/>` : emojis[i%emojis.length];
+      row.innerHTML = `
+        <div class="search-result-cover ${t.artwork_url?'':gradients[i%gradients.length]}">${cover}</div>
+        <div class="search-result-info">
+          <div class="search-result-title">${esc(t.title)}</div>
+          <div class="search-result-artist">${esc(t.artist)}</div>
+        </div>
+        <div class="icon-btn" title="Play">▶</div>`;
+      row.onclick = () => { playTrack(i); closeSearch(); };
+      results.appendChild(row);
+    });
+  }
+
+  // ── SHARE ──
+  function openShare(track) {
+    currentShareTrack = track;
+    document.getElementById('sharePanelTitle').textContent = `Share: ${track.title}`;
+    document.getElementById('sharePanel').classList.add('open');
+    document.getElementById('shareBackdrop').classList.add('open');
+  }
+  function closeShare() {
+    document.getElementById('sharePanel').classList.remove('open');
+    document.getElementById('shareBackdrop').classList.remove('open');
+  }
+  function getShareUrl(track) { return `${window.location.origin}/?track=${track.id}`; }
+  function shareWhatsApp() {
+    if (!currentShareTrack) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(currentShareTrack.title+' by '+currentShareTrack.artist+' — '+getShareUrl(currentShareTrack))}`, '_blank');
+    closeShare();
+  }
+  function shareFacebook() {
+    if (!currentShareTrack) return;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl(currentShareTrack))}`, '_blank');
+    closeShare();
+  }
+  function shareCopyLink() {
+    if (!currentShareTrack) return;
+    const url = getShareUrl(currentShareTrack);
+    navigator.clipboard?.writeText(url).catch(() => {
+      const t = document.createElement('input'); t.value = url;
+      document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+    });
+    toast('Link copied!');
+    closeShare();
+  }
+
+  // ── PLAYER ──
+  function playTrack(idx) {
+    const track = allTracks[idx];
+    if (!track) return;
+    currentIdx = idx;
+    audio.src = track.file_url;
+    audio.play().catch(console.error);
+    playing = true;
+    document.getElementById('playPauseBtn').textContent = '⏸';
+    document.getElementById('playerTitle').textContent = track.title;
+    document.getElementById('playerArtist').textContent = track.artist;
+    const artEl = document.getElementById('playerArt');
+    if (track.artwork_url) {
+      artEl.innerHTML = `<img src="${track.artwork_url}" alt=""/>`;
+      artEl.className = 'player-art';
+    } else {
+      artEl.innerHTML = emojis[idx % emojis.length];
+      artEl.className = `player-art ${gradients[idx % gradients.length]}`;
+    }
+    document.getElementById('player').classList.add('active');
+    // increment play count
+    sb.from('tracks').update({ play_count: (track.play_count||0)+1 }).eq('id', track.id).then(() => {
+      track.play_count = (track.play_count||0)+1;
+    });
+  }
+
+  function togglePlay() {
+    if (!allTracks[currentIdx]) return;
+    if (playing) { audio.pause(); } else { audio.play(); }
+    playing = !playing;
+    document.getElementById('playPauseBtn').textContent = playing ? '⏸' : '▶';
+  }
+
+  function closePlayer() {
+    audio.pause(); playing = false;
+    document.getElementById('player').classList.remove('active');
+  }
+
+  function seek(e) {
+    if (!audio.duration) return;
+    const bar = document.getElementById('playerBar');
+    const rect = bar.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = pct * audio.duration;
+  }
+
+  function setVolume(v) { audio.volume = v; }
+
+  audio.addEventListener('timeupdate', () => {
+    if (!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    document.getElementById('playerFill').style.width = pct + '%';
+    document.getElementById('currentTime').textContent = fmt(audio.currentTime);
+  });
+  audio.addEventListener('loadedmetadata', () => {
+    document.getElementById('totalTime').textContent = fmt(audio.duration);
+  });
+  audio.addEventListener('ended', () => {
+    playing = false;
+    document.getElementById('playPauseBtn').textContent = '▶';
+    const next = currentIdx + 1;
+    if (next < allTracks.length) playTrack(next);
+  });
+
+  document.getElementById('prevBtn').onclick = () => { if (currentIdx > 0) playTrack(currentIdx - 1); };
+  document.getElementById('nextBtn').onclick = () => { if (currentIdx < allTracks.length - 1) playTrack(currentIdx + 1); };
+
+  function downloadTrack(track, btn) {
+    const a = document.createElement('a');
+    a.href = track.file_url + (track.file_url.includes('?') ? '&' : '?') + 'download';
+    a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    if (btn) { const orig = btn.textContent; btn.textContent = '✓ Done!'; setTimeout(() => btn.textContent = orig, 2000); }
+    toast('Download started.');
+    sb.from('tracks').update({ download_count: (track.download_count||0)+1 }).eq('id', track.id).then(() => {
+      track.download_count = (track.download_count||0)+1;
+    });
+  }
+
+  function downloadCurrent() {
+    if (allTracks[currentIdx]) downloadTrack(allTracks[currentIdx], null);
+  }
+
+  // ── RENDER FUNCTIONS ──
+  function buildTrackCard(track, i) {
+    const g = gradients[i % gradients.length];
+    const emoji = emojis[i % emojis.length];
+    const el = document.createElement('div');
+    el.className = 'track-card';
+    el.innerHTML = `
+      <div class="track-art">
+        <div class="track-art-inner ${track.artwork_url ? '' : g}">${track.artwork_url ? `<img src="${track.artwork_url}" alt="" loading="lazy"/>` : emoji}</div>
+        <div class="track-art-overlay">
+          <button class="art-btn art-btn-play" title="Play">▶</button>
+          <button class="art-btn art-btn-dl" title="Download">⬇</button>
+        </div>
+      </div>
+      <div class="track-body">
+        <div class="track-genre-pill">${esc(track.genre || 'Music')}</div>
+        <div class="track-name">${esc(track.title)}</div>
+        <div class="track-artist-name">${esc(track.artist)}</div>
+        <div class="track-actions">
+          <button class="action-btn gold play-btn">▶ Play</button>
+          <button class="action-btn dl-btn">⬇ MP3</button>
+          <button class="action-btn share-btn">Share</button>
+        </div>
+      </div>`;
+    const idx = allTracks.indexOf(track);
+    el.querySelector('.art-btn-play').onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+    el.querySelector('.art-btn-dl').onclick = (e) => { e.stopPropagation(); downloadTrack(track, null); };
+    el.querySelector('.play-btn').onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+    el.querySelector('.dl-btn').onclick = (e) => { e.stopPropagation(); downloadTrack(track, e.currentTarget); };
+    el.querySelector('.share-btn').onclick = (e) => { e.stopPropagation(); openShare(track); };
+    return el;
+  }
+
+  function renderTrackGrid(tracks) {
+    const grid = document.getElementById('trackGrid');
+    if (!tracks.length) {
+      grid.innerHTML = '<div class="grid-status">No tracks found.</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    tracks.forEach((t, i) => grid.appendChild(buildTrackCard(t, i)));
+  }
+
+  function renderFeatured(tracks) {
+    const list = document.getElementById('featuredList');
+    const featured = tracks.filter(t => t.is_featured).slice(0, 5);
+    if (!featured.length) {
+      list.innerHTML = '<div class="grid-status" style="color:var(--muted)">No featured songs yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    featured.forEach((t, i) => {
+      const idx = allTracks.indexOf(t);
+      const g = gradients[idx % gradients.length];
+      const emoji = emojis[idx % emojis.length];
+      const el = document.createElement('div');
+      el.className = 'featured-card';
+      el.innerHTML = `
+        <div class="featured-cover ${t.artwork_url ? '' : g}" style="position:relative">
+          ${t.artwork_url ? `<img src="${t.artwork_url}" alt="" loading="lazy"/>` : emoji}
+          <span class="featured-badge">FEATURED</span>
+        </div>
+        <div class="featured-info">
+          <div class="featured-title">${esc(t.title)}</div>
+          <div class="featured-meta">
+            <span>${esc(t.artist)}</span>
+            <span class="featured-sep">·</span>
+            <span>${esc(t.genre || 'Music')}</span>
+            ${t.release_date ? `<span class="featured-sep">·</span><span>${new Date(t.release_date).getFullYear()}</span>` : ''}
+          </div>
+        </div>
+        <div class="featured-actions">
+          <button class="icon-btn gold play-btn" title="Play">▶</button>
+          <button class="icon-btn dl-btn" title="Download">⬇</button>
+          <button class="icon-btn share-btn" title="Share">↗</button>
+        </div>`;
+      el.querySelector('.play-btn').onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+      el.querySelector('.dl-btn').onclick = (e) => { e.stopPropagation(); downloadTrack(t, null); };
+      el.querySelector('.share-btn').onclick = (e) => { e.stopPropagation(); openShare(t); };
+      el.onclick = () => playTrack(idx);
+      list.appendChild(el);
+    });
+  }
+
+  function renderLatest(tracks) {
+    const list = document.getElementById('latestList');
+    const latest = [...tracks].slice(0, 6);
+    if (!latest.length) { list.innerHTML = '<div class="grid-status" style="color:var(--muted);padding:24px 0">No tracks yet.</div>'; return; }
+    list.innerHTML = '';
+    const mini = document.createElement('div');
+    mini.style.cssText = 'display:flex;flex-direction:column;gap:10px';
+    latest.forEach((t) => {
+      const idx = allTracks.indexOf(t);
+      const g = gradients[idx % gradients.length];
+      const row = document.createElement('div');
+      row.className = 'trending-row';
+      row.innerHTML = `
+        <div class="trending-cover ${t.artwork_url ? '' : g}">${t.artwork_url ? `<img src="${t.artwork_url}" alt=""/>` : emojis[idx%emojis.length]}</div>
+        <div class="trending-info">
+          <div class="trending-title">${esc(t.title)}</div>
+          <div class="trending-artist">${esc(t.artist)}</div>
+        </div>
+        <button class="trending-play">▶</button>`;
+      row.querySelector('.trending-play').onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+      row.onclick = () => playTrack(idx);
+      mini.appendChild(row);
+    });
+    list.appendChild(mini);
+  }
+
+  function renderTrending(tracks) {
+    const list = document.getElementById('trendingList');
+    const top = [...tracks].sort((a, b) => (b.download_count||0) - (a.download_count||0)).slice(0, 6);
+    if (!top.length) { list.innerHTML = '<div class="grid-status" style="color:var(--muted);padding:24px 0">No data yet.</div>'; return; }
+    list.innerHTML = '';
+    top.forEach((t, rank) => {
+      const idx = allTracks.indexOf(t);
+      const g = gradients[idx % gradients.length];
+      const row = document.createElement('div');
+      row.className = 'trending-row';
+      row.innerHTML = `
+        <div class="trending-num">0${rank+1}</div>
+        <div class="trending-cover ${t.artwork_url ? '' : g}">${t.artwork_url ? `<img src="${t.artwork_url}" alt=""/>` : emojis[idx%emojis.length]}</div>
+        <div class="trending-info">
+          <div class="trending-title">${esc(t.title)}</div>
+          <div class="trending-artist">${esc(t.artist)}</div>
+        </div>
+        <div class="trending-count">${(t.download_count||0)} ↓</div>
+        <button class="trending-play">▶</button>`;
+      row.querySelector('.trending-play').onclick = (e) => { e.stopPropagation(); playTrack(idx); };
+      row.onclick = () => playTrack(idx);
+      list.appendChild(row);
+    });
+  }
+
+  function renderArtists(artists, tracks) {
+    const grid = document.getElementById('artistGrid');
+    if (!artists.length) {
+      grid.innerHTML = '<div class="grid-status" style="grid-column:1/-1;color:var(--muted)">No artists yet.</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    artists.forEach(a => {
+      const songCount = tracks.filter(t => (t.artist||'').toLowerCase() === (a.name||'').toLowerCase()).length;
+      const el = document.createElement('div');
+      el.className = 'artist-card';
+      el.innerHTML = `
+        <div class="artist-avatar">${a.photo_url ? `<img src="${a.photo_url}" alt=""/>` : '🎤'}</div>
+        <div class="artist-card-name">${esc(a.name)}</div>
+        <div class="artist-card-meta">${songCount} song${songCount !== 1 ? 's' : ''}</div>
+        ${a.genre ? `<div class="artist-card-meta" style="margin-top:3px">${esc(a.genre)}</div>` : ''}`;
+      el.onclick = () => {
+        activeGenre = 'All';
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        document.querySelector('.pill[data-genre="All"]')?.classList.add('active');
+        filteredTracks = allTracks.filter(t => (t.artist||'').toLowerCase() === (a.name||'').toLowerCase());
+        renderTrackGrid(filteredTracks);
+        navScroll('music');
+      };
+      grid.appendChild(el);
+    });
+  }
+
+  function renderGenres(genres, tracks) {
+    const grid = document.getElementById('genreGrid');
+    const pills = document.getElementById('genrePills');
+    const genreEmojis = { 'Afrobeat': '🥁', 'Amapiano': '🎹', 'Gospel': '✝️', 'Hip Hop': '🎤', 'R&B': '🎶', 'Traditional': '🪘', 'Dance': '💃', 'Zili': '🎵', 'Other': '🎸' };
+
+    // Pills
+    pills.innerHTML = '';
+    const allPill = document.createElement('div');
+    allPill.className = 'pill active'; allPill.textContent = 'All'; allPill.dataset.genre = 'All';
+    allPill.onclick = () => { activeGenre = 'All'; filterByGenre('All'); document.querySelectorAll('.pill').forEach(p => p.classList.remove('active')); allPill.classList.add('active'); };
+    pills.appendChild(allPill);
+
+    const genreNames = genres.length ? genres.map(g => g.name) : [...new Set(tracks.map(t => t.genre).filter(Boolean))];
+    genreNames.forEach(name => {
+      const count = tracks.filter(t => t.genre === name).length;
+      if (!count) return;
+      const pill = document.createElement('div');
+      pill.className = 'pill'; pill.textContent = `${name} (${count})`; pill.dataset.genre = name;
+      pill.onclick = () => { activeGenre = name; filterByGenre(name); document.querySelectorAll('.pill').forEach(p => p.classList.remove('active')); pill.classList.add('active'); };
+      pills.appendChild(pill);
+    });
+
+    // Genre grid
+    if (!genres.length) { grid.innerHTML = '<div class="grid-status" style="grid-column:1/-1;color:var(--muted)">No genres yet.</div>'; return; }
+    grid.innerHTML = '';
+    genres.forEach(g => {
+      const count = tracks.filter(t => t.genre === g.name).length;
+      const el = document.createElement('div');
+      el.className = 'genre-card';
+      el.innerHTML = `
+        <div class="genre-icon">${genreEmojis[g.name] || '🎵'}</div>
+        <div class="genre-card-name">${esc(g.name)}</div>
+        <div class="genre-count">${count} track${count !== 1 ? 's' : ''}</div>`;
+      el.onclick = () => { filterByGenre(g.name); navScroll('music'); };
+      grid.appendChild(el);
+    });
+  }
+
+  function filterByGenre(genre) {
+    filteredTracks = genre === 'All' ? allTracks : allTracks.filter(t => t.genre === genre);
+    renderTrackGrid(filteredTracks);
+    document.querySelectorAll('.pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.genre === genre);
+    });
+    activeGenre = genre;
+    navScroll('music');
+  }
+
+  function renderRoster(roster) {
+    const track = document.getElementById('rosterTrack');
+    const footer = document.getElementById('footerArtistRoster');
+    const names = roster ? roster.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (!names.length) { document.getElementById('artistRosterBar').style.display = 'none'; return; }
+
+    const allNames = [...names, ...names]; // duplicate for infinite scroll
+    track.innerHTML = allNames.map(n =>
+      `<span class="roster-item"><span class="roster-dot"></span>${esc(n)}</span>`
+    ).join('');
+
+    footer.innerHTML = names.slice(0, 6).map(n => `<p style="color:var(--muted);font-size:0.82rem;margin-bottom:8px">${esc(n)}</p>`).join('');
+  }
+
+  function applySettings(s) {
+    if (!s) return;
+    if (s.site_description) document.getElementById('footerDesc').textContent = s.site_description;
+    if (s.about_text) document.getElementById('aboutText').textContent = s.about_text;
+    if (s.artist_roster) renderRoster(s.artist_roster);
+  }
+
+  function handleSharedLink() {
+    const params = new URLSearchParams(window.location.search);
+    const tid = params.get('track');
+    if (!tid) return;
+    const idx = allTracks.findIndex(t => String(t.id) === String(tid));
+    if (idx === -1) return;
+    setTimeout(() => playTrack(idx), 800);
+  }
+
+  // ── INIT ──
+  buildWaveform();
+
+  async function init() {
+    try {
+      const [tracksRes, artistsRes, genresRes, settingsRes] = await Promise.all([
+        sb.from('tracks').select('*').order('created_at', { ascending: false }),
+        sb.from('artists').select('*').order('name'),
+        sb.from('genres').select('*').order('name'),
+        sb.from('site_settings').select('*').eq('id', 1).single(),
+      ]);
+
+      allTracks = tracksRes.data || [];
+      allArtists = artistsRes.data || [];
+      allGenres = genresRes.data || [];
+      filteredTracks = [...allTracks];
+
+      if (!settingsRes.error) applySettings(settingsRes.data);
+
+      renderFeatured(allTracks);
+      renderTrackGrid(filteredTracks);
+      renderLatest(allTracks);
+      renderTrending(allTracks);
+      renderArtists(allArtists, allTracks);
+      renderGenres(allGenres, allTracks);
+      handleSharedLink();
+
+    } catch (err) {
+      console.error('Init failed:', err);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
