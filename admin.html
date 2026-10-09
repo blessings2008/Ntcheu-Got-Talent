@@ -870,24 +870,70 @@
     return msg;
   }
 
+  async function detectAudioFormat(file) {
+    const ext = (String(file.name || '').split('.').pop() || '').toLowerCase();
+    const typesByExt = {
+      mp3: ['mp3', 'audio/mpeg'], wav: ['wav', 'audio/wav'],
+      m4a: ['m4a', 'audio/mp4'], mp4: ['mp4', 'audio/mp4'],
+      aac: ['aac', 'audio/aac'], ogg: ['ogg', 'audio/ogg'],
+      oga: ['oga', 'audio/ogg'], flac: ['flac', 'audio/flac'],
+      weba: ['weba', 'audio/webm'], webm: ['webm', 'audio/webm'],
+    };
+    if (typesByExt[ext]) return { extension: typesByExt[ext][0], contentType: typesByExt[ext][1] };
+
+    // Some Android file pickers expose a generic name/MIME type. Inspect the
+    // file signature so we can still identify supported audio safely.
+    const bytes = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+    const ascii = (start, length) => String.fromCharCode(...bytes.slice(start, start + length));
+    if (ascii(0, 3) === 'ID3' || (bytes.length > 1 && bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)) {
+      return { extension: 'mp3', contentType: 'audio/mpeg' };
+    }
+    if (ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WAVE') return { extension: 'wav', contentType: 'audio/wav' };
+    if (ascii(0, 4) === 'fLaC') return { extension: 'flac', contentType: 'audio/flac' };
+    if (ascii(0, 4) === 'OggS') return { extension: 'ogg', contentType: 'audio/ogg' };
+    if (ascii(4, 4) === 'ftyp') return { extension: 'm4a', contentType: 'audio/mp4' };
+    if (bytes.length > 1 && bytes[0] === 0xff && (bytes[1] & 0xf6) === 0xf0) {
+      return { extension: 'aac', contentType: 'audio/aac' };
+    }
+    if (file.type && file.type.startsWith('audio/')) {
+      const subtype = file.type.split('/')[1].toLowerCase();
+      const mapped = {
+        mpeg: ['mp3', 'audio/mpeg'], mp3: ['mp3', 'audio/mpeg'],
+        wav: ['wav', 'audio/wav'], x-wav: ['wav', 'audio/wav'],
+        mp4: ['m4a', 'audio/mp4'], aac: ['aac', 'audio/aac'],
+        ogg: ['ogg', 'audio/ogg'], flac: ['flac', 'audio/flac'],
+        webm: ['webm', 'audio/webm'],
+      }[subtype];
+      if (mapped) return { extension: mapped[0], contentType: mapped[1] };
+    }
+    return null;
+  }
+
   async function uploadFile(file, prefix) {
     if (!file) throw new Error('No file selected.');
-    const originalName = safeOriginalFilename(file.name);
-    const ext = (originalName.split('.').pop() || '').toLowerCase();
-    const allowedAudio = ['mp3', 'wav', 'm4a', 'mp4', 'aac', 'ogg', 'oga', 'flac', 'weba', 'webm'];
-    const allowedImages = ['jpg', 'jpeg', 'png', 'webp'];
-    if (prefix === 'audio' && !allowedAudio.includes(ext)) {
-      throw new Error('Unsupported audio format. Please choose an MP3, WAV, M4A, AAC, OGG or FLAC file.');
-    }
-    if (prefix !== 'audio' && !allowedImages.includes(ext)) {
-      throw new Error('Unsupported image format. Please choose a JPG, PNG or WEBP image.');
+    let originalName = safeOriginalFilename(file.name);
+    let contentType;
+
+    if (prefix === 'audio') {
+      const format = await detectAudioFormat(file);
+      if (!format) {
+        throw new Error('I could not identify this audio file. Please select the actual MP3, WAV, M4A, AAC, OGG or FLAC file from your phone, not a shortcut or link.');
+      }
+      if (!/\.[a-z0-9]{2,5}$/i.test(originalName)) originalName += '.' + format.extension;
+      contentType = format.contentType;
+    } else {
+      const ext = (originalName.split('.').pop() || '').toLowerCase();
+      const allowedImages = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!allowedImages.includes(ext)) {
+        throw new Error('Unsupported image format. Please choose a JPG, PNG or WEBP image.');
+      }
+      contentType = getUploadContentType({ ...file, name: originalName });
     }
 
     // Unique folder prevents filename collisions while keeping the original filename
     // as the object basename, so downloads retain the user's original filename.
     const uniqueFolder = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     const path = `${uniqueFolder}/${originalName}`;
-    const contentType = getUploadContentType({ ...file, name: originalName });
 
     const { error } = await sb.storage.from(BUCKET).upload(path, file, {
       cacheControl: '3600',
