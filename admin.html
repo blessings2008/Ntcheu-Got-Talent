@@ -822,12 +822,42 @@
     reader.readAsDataURL(f);
   }
 
-  function sanitize(n) {
-    return (n || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  function safeOriginalFilename(name) {
+    // Keep the original visible filename, but prevent path traversal and control characters.
+    return String(name || 'file')
+      .replace(/[\\/\\\\]/g, '_')
+      .replace(/[\\u0000-\\u001f\\u007f]/g, '')
+      .replace(/^\\.+$/, 'file')
+      .trim() || 'file';
+  }
+
+  function getUploadContentType(file) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const knownTypes = {
+      mp3: 'audio/mpeg',
+      wav: 'audio/wav',
+      m4a: 'audio/mp4',
+      mp4: 'audio/mp4',
+      aac: 'audio/aac',
+      ogg: 'audio/ogg',
+      oga: 'audio/ogg',
+      flac: 'audio/flac',
+      weba: 'audio/webm',
+      webm: 'audio/webm',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+    };
+    // Android sometimes reports valid audio files as application/octet-stream.
+    return knownTypes[ext] || (file.type && file.type !== 'application/octet-stream' ? file.type : 'application/octet-stream');
   }
 
   function getStorageErrorMessage(error, file) {
     const msg = error?.message || error?.error_description || String(error || 'Unknown error');
+    if (/mime type.*not supported|unsupported.*mime|mime.*not allowed/i.test(msg)) {
+      return `The server rejected the file type for "${file?.name || 'this file'}". Choose an MP3, WAV, M4A, AAC, OGG or FLAC audio file.`;
+    }
     if (/row-level security|not authorized|permission denied|Unauthorized|403/i.test(msg)) {
       return 'Upload blocked by Supabase Storage permissions. The tracks bucket needs an INSERT policy for your admin account.';
     }
@@ -842,14 +872,27 @@
 
   async function uploadFile(file, prefix) {
     if (!file) throw new Error('No file selected.');
-    const ext = sanitize(file.name.split('.').pop() || 'bin').toLowerCase();
-    const base = sanitize(file.name.replace(/\.[^.]+$/, ''));
-    const path = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${base}.${ext}`;
+    const originalName = safeOriginalFilename(file.name);
+    const ext = (originalName.split('.').pop() || '').toLowerCase();
+    const allowedAudio = ['mp3', 'wav', 'm4a', 'mp4', 'aac', 'ogg', 'oga', 'flac', 'weba', 'webm'];
+    const allowedImages = ['jpg', 'jpeg', 'png', 'webp'];
+    if (prefix === 'audio' && !allowedAudio.includes(ext)) {
+      throw new Error('Unsupported audio format. Please choose an MP3, WAV, M4A, AAC, OGG or FLAC file.');
+    }
+    if (prefix !== 'audio' && !allowedImages.includes(ext)) {
+      throw new Error('Unsupported image format. Please choose a JPG, PNG or WEBP image.');
+    }
+
+    // Unique folder prevents filename collisions while keeping the original filename
+    // as the object basename, so downloads retain the user's original filename.
+    const uniqueFolder = `${prefix}/${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    const path = `${uniqueFolder}/${originalName}`;
+    const contentType = getUploadContentType({ ...file, name: originalName });
 
     const { error } = await sb.storage.from(BUCKET).upload(path, file, {
       cacheControl: '3600',
       upsert: false,
-      contentType: file.type || 'application/octet-stream',
+      contentType,
     });
     if (error) throw new Error(getStorageErrorMessage(error, file));
 
