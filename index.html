@@ -843,6 +843,64 @@
       .nav-links a { padding:8px 9px; font-size:.78rem; }
     }
 
+
+    /* Centered animated mobile navigation dialog */
+    .mobile-nav-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 24px; overflow-y: auto;
+      background: rgba(7,8,11,.78);
+      -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity .28s ease, visibility .28s ease;
+    }
+    .mobile-nav-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+    .mobile-nav-overlay::before {
+      content: ""; position: absolute; width: min(88vw,440px); height: min(78vh,620px);
+      border: 1px solid rgba(215,168,74,.22); border-radius: 28px;
+      background: radial-gradient(ellipse at top,rgba(215,168,74,.10),transparent 58%),#11141a;
+      box-shadow: 0 30px 100px rgba(0,0,0,.58);
+      transform: translateY(18px) scale(.96); opacity: 0;
+      transition: transform .32s cubic-bezier(.2,.8,.2,1),opacity .25s ease;
+    }
+    .mobile-nav-overlay.open::before { transform: translateY(0) scale(1); opacity: 1; }
+    .mobile-nav-header,.mobile-nav-links { position: relative; z-index: 1; width: min(78vw,350px); }
+    .mobile-nav-header { margin-bottom: 26px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .mobile-nav-close { display:grid; place-items:center; width:40px; height:40px; border:1px solid var(--border); border-radius:50%; background:#1b2028; color:var(--text); font-size:1.1rem; cursor:pointer; }
+    .mobile-nav-links { gap:6px; }
+    .mobile-nav-links a { border:0; border-radius:12px; padding:13px 16px; font-family:'Inter',sans-serif; font-size:1.04rem; font-weight:650; letter-spacing:-.02em; transition:background .18s,color .18s,transform .18s; }
+    .mobile-nav-links a:hover,.mobile-nav-links a:focus-visible { background:rgba(215,168,74,.11); color:var(--gold2); transform:translateX(4px); outline:none; }
+    .mobile-nav-overlay.open .mobile-nav-links a { animation: menuItemIn .32s both; }
+    .mobile-nav-overlay.open .mobile-nav-links a:nth-child(2) { animation-delay:.035s; }
+    .mobile-nav-overlay.open .mobile-nav-links a:nth-child(3) { animation-delay:.07s; }
+    .mobile-nav-overlay.open .mobile-nav-links a:nth-child(4) { animation-delay:.105s; }
+    .mobile-nav-overlay.open .mobile-nav-links a:nth-child(5) { animation-delay:.14s; }
+    @keyframes menuItemIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Search results: faster discovery, stronger hierarchy and mobile fit */
+    .search-overlay { overflow-y:auto; padding:clamp(22px,7vh,72px) 18px 28px; }
+    .search-bar-big { position:sticky; top:0; z-index:2; box-shadow:0 12px 28px rgba(0,0,0,.18); }
+    .search-results { max-height:calc(100vh - 190px); overflow-y:auto; padding-bottom:12px; }
+    .search-result-row { border:1px solid transparent; margin-bottom:4px; }
+    .search-result-row:active { background:var(--card); transform:scale(.995); }
+    .search-result-cover { width:52px; height:52px; min-width:52px; }
+    .search-result-title { font-size:.94rem; }
+    .search-result-artist { margin-top:4px; }
+    .search-result-meta { color:var(--muted); font-size:.72rem; text-align:right; white-space:nowrap; }
+    .search-results-heading { padding:0 12px 10px; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; font-weight:700; }
+    .search-no-result { border:1px dashed var(--border); border-radius:14px; padding:28px 18px; }
+    @media (max-width:600px) {
+      .mobile-nav-overlay { padding:18px; }
+      .mobile-nav-overlay::before { width:calc(100vw - 36px); height:min(72vh,560px); }
+      .mobile-nav-header,.mobile-nav-links { width:calc(100vw - 84px); max-width:340px; }
+      .search-bar-big { padding:12px 14px; margin-bottom:20px; gap:10px; }
+      .search-bar-big input { min-width:0; font-size:1rem; }
+      .search-results { max-height:calc(100dvh - 130px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mobile-nav-overlay,.mobile-nav-overlay::before,.mobile-nav-links a { transition:none !important; animation:none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -867,10 +925,10 @@
 </nav>
 
 <!-- MOBILE NAV -->
-<div class="mobile-nav-overlay" id="mobileNav">
+<div class="mobile-nav-overlay" id="mobileNav" onclick="if(event.target===this)closeMobileNav()" role="dialog" aria-modal="true" aria-label="Navigation menu">
   <div class="mobile-nav-header">
     <div class="nav-logo">Ntcheu Got Talent</div>
-    <button class="mobile-nav-close" onclick="closeMobileNav()">✕</button>
+    <button id="mobileMenuClose" class="mobile-nav-close" onclick="closeMobileNav()" aria-label="Close menu">✕</button>
   </div>
   <div class="mobile-nav-links">
     <a href="#home" onclick="navScroll('home');closeMobileNav()">Home</a>
@@ -882,7 +940,7 @@
 </div>
 
 <!-- SEARCH OVERLAY -->
-<div class="search-overlay" id="searchOverlay">
+<div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()" role="dialog" aria-modal="true" aria-label="Search music">
   <div class="search-bar-big">
     <span>🔍</span>
     <input type="text" id="searchInput" placeholder="Search songs, artists, genres…" oninput="handleSearch(this.value)" autofocus/>
@@ -1160,47 +1218,113 @@
   function navScroll(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
-  function openMobileNav() { document.getElementById('mobileNav').classList.add('open'); }
-  function closeMobileNav() { document.getElementById('mobileNav').classList.remove('open'); }
+  function openMobileNav() {
+    const menu = document.getElementById('mobileNav');
+    menu.classList.add('open');
+    document.body.classList.add('modal-open');
+    document.getElementById('mobileMenuClose')?.focus({ preventScroll: true });
+  }
+  function closeMobileNav() {
+    document.getElementById('mobileNav').classList.remove('open');
+    if (!document.getElementById('searchOverlay').classList.contains('open')) document.body.classList.remove('modal-open');
+  }
 
   // ── SEARCH ──
-  function openSearch() { document.getElementById('searchOverlay').classList.add('open'); setTimeout(() => document.getElementById('searchInput').focus(), 100); }
-  function closeSearch() { document.getElementById('searchOverlay').classList.remove('open'); document.getElementById('searchInput').value = ''; document.getElementById('searchResults').innerHTML = ''; }
-  function handleSearch(q) {
+  function openSearch() {
+    const overlay = document.getElementById('searchOverlay');
+    overlay.classList.add('open');
+    document.body.classList.add('modal-open');
+    setTimeout(() => document.getElementById('searchInput')?.focus({ preventScroll: true }), 120);
+  }
+  function closeSearch() {
+    document.getElementById('searchOverlay').classList.remove('open');
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').innerHTML = '';
+    if (!document.getElementById('mobileNav').classList.contains('open')) document.body.classList.remove('modal-open');
+  }
+  function handleSearch(query) {
     const results = document.getElementById('searchResults');
     const empty = document.getElementById('searchEmpty');
-    q = q.trim().toLowerCase();
-    if (!q) { results.innerHTML = ''; return; }
-    const found = allTracks.filter(t =>
-      (t.title||'').toLowerCase().includes(q) ||
-      (t.artist||'').toLowerCase().includes(q) ||
-      (t.genre||'').toLowerCase().includes(q) ||
-      (t.album||'').toLowerCase().includes(q)
-    );
-    if (!found.length) {
-      results.innerHTML = '';
-      results.appendChild(empty);
+    const q = String(query || '').trim().toLocaleLowerCase();
+    results.innerHTML = '';
+    if (!q) {
+      empty.style.display = 'none';
+      return;
+    }
+
+    const terms = q.split(/\\s+/).filter(Boolean);
+    const ranked = allTracks.map((track, index) => {
+      const title = String(track.title || '').toLocaleLowerCase();
+      const artist = String(track.artist || '').toLocaleLowerCase();
+      const genre = String(track.genre || '').toLocaleLowerCase();
+      const album = String(track.album || '').toLocaleLowerCase();
+      const searchable = [title, artist, genre, album].join(' ');
+      const matches = terms.every(term => searchable.includes(term));
+      if (!matches) return null;
+      let score = 0;
+      if (title === q) score += 100;
+      else if (title.startsWith(q)) score += 60;
+      else if (title.includes(q)) score += 40;
+      if (artist === q) score += 35;
+      else if (artist.startsWith(q)) score += 22;
+      else if (artist.includes(q)) score += 12;
+      if (genre.includes(q)) score += 6;
+      if (album.includes(q)) score += 4;
+      return { track, index, score };
+    }).filter(Boolean).sort((a,b) => b.score - a.score || a.track.title.localeCompare(b.track.title));
+
+    if (!ranked.length) {
       empty.style.display = 'block';
+      results.appendChild(empty);
       return;
     }
     empty.style.display = 'none';
-    results.innerHTML = '';
-    found.slice(0,8).forEach(t => {
-      const i = allTracks.indexOf(t);
-      const row = document.createElement('div');
+    const heading = document.createElement('div');
+    heading.className = 'search-results-heading';
+    heading.textContent = `${ranked.length} result${ranked.length === 1 ? '' : 's'}`;
+    results.appendChild(heading);
+
+    ranked.slice(0, 20).forEach(({ track, index }) => {
+      const row = document.createElement('button');
+      row.type = 'button';
       row.className = 'search-result-row';
-      const cover = t.artwork_url ? `<img src="${t.artwork_url}" alt=""/>` : emojis[i%emojis.length];
-      row.innerHTML = `
-        <div class="search-result-cover ${t.artwork_url?'':gradients[i%gradients.length]}">${cover}</div>
-        <div class="search-result-info">
-          <div class="search-result-title">${esc(t.title)}</div>
-          <div class="search-result-artist">${esc(t.artist)}</div>
-        </div>
-        <div class="icon-btn" title="Play">▶</div>`;
-      row.onclick = () => { playTrack(i); closeSearch(); };
+      row.setAttribute('aria-label', `Play ${track.title} by ${track.artist}`);
+      const coverWrap = document.createElement('div');
+      coverWrap.className = 'search-result-cover ' + (track.artwork_url ? '' : gradients[index % gradients.length]);
+      if (track.artwork_url) {
+        const img = document.createElement('img');
+        img.src = track.artwork_url;
+        img.alt = '';
+        img.loading = 'lazy';
+        coverWrap.appendChild(img);
+      } else {
+        coverWrap.textContent = emojis[index % emojis.length];
+      }
+      const info = document.createElement('div');
+      info.className = 'search-result-info';
+      const title = document.createElement('div');
+      title.className = 'search-result-title';
+      title.textContent = track.title || 'Untitled';
+      const artist = document.createElement('div');
+      artist.className = 'search-result-artist';
+      artist.textContent = [track.artist || 'Unknown artist', track.genre].filter(Boolean).join(' · ');
+      info.append(title, artist);
+      const play = document.createElement('span');
+      play.className = 'icon-btn';
+      play.textContent = '▶';
+      play.setAttribute('aria-hidden', 'true');
+      row.append(coverWrap, info, play);
+      row.onclick = () => { playTrack(index); closeSearch(); };
       results.appendChild(row);
     });
   }
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeMobileNav();
+      closeSearch();
+    }
+  });
 
   // ── SHARE ──
   function openShare(track) {
