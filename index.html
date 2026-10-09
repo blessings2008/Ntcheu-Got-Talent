@@ -799,6 +799,50 @@
     .g4 { background: linear-gradient(135deg,#160606,#400000); }
     .g5 { background: linear-gradient(135deg,#060a16,#001040); }
     .g6 { background: linear-gradient(135deg,#101006,#302800); }
+
+    /* Modern navigation, typography and public feedback */
+    :root { --bg:#0b0c10; --surface:#12151b; --card:#171b23; --border:#292f3a; --gold:#d7a84a; --gold2:#f1c76b; --cream:#f5f2eb; --text:#f3f4f6; --muted:#9ba3b2; --radius:16px; }
+    body { font-family:'Inter',sans-serif; letter-spacing:-.01em; }
+    nav#mainNav { display:grid; grid-template-columns:1fr auto 1fr; gap:18px; padding:0 clamp(16px,4vw,48px); }
+    .nav-logo { margin:0; font-size:1.15rem; letter-spacing:1.3px; }
+    .nav-links { justify-content:center; flex:initial; gap:5px; }
+    .nav-links a { padding:9px 13px; border-radius:999px; }
+    .nav-right { justify-self:end; margin-left:0; }
+    .search-trigger { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:999px; padding:9px 15px; cursor:pointer; font:600 .82rem 'Inter',sans-serif; transition:.2s; }
+    .search-trigger span:first-child { font-size:1.25rem; line-height:1; }
+    .search-trigger:hover { border-color:var(--gold); color:var(--gold2); background:rgba(215,168,74,.08); }
+    .track-card,.featured-card,.trending-row,.artist-card,.genre-card { box-shadow:0 5px 20px rgba(0,0,0,.12); }
+    .track-card { border-radius:16px; }
+    .track-body { padding:16px; }
+    .track-name { font-size:.95rem; letter-spacing:-.025em; }
+    .track-actions { gap:8px; }
+    .action-btn { border-radius:10px; padding:9px 4px; }
+    .track-feedback { margin-top:13px; padding-top:12px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:9px; }
+    .feedback-top { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font-size:.75rem; }
+    .feedback-score { color:var(--gold2); font-weight:700; white-space:nowrap; }
+    .feedback-controls { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .like-track { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--surface); color:var(--muted); padding:7px 10px; border-radius:999px; font:600 .76rem 'Inter',sans-serif; cursor:pointer; }
+    .like-track.liked { color:#ff7588; border-color:rgba(255,117,136,.45); background:rgba(255,117,136,.08); }
+    .track-stars { display:flex; gap:2px; }
+    .track-star { border:0; background:transparent; color:#525966; padding:2px; font-size:1rem; cursor:pointer; line-height:1; }
+    .track-star.selected,.track-star:hover { color:var(--gold2); }
+    .track-star:focus-visible,.like-track:focus-visible,.search-trigger:focus-visible { outline:2px solid var(--gold2); outline-offset:3px; }
+    .nav-search { display:none; }
+    @media (max-width: 760px) {
+      nav#mainNav { grid-template-columns:1fr auto; gap:10px; height:60px; padding:0 15px; }
+      .nav-links { display:none; }
+      .nav-right { gap:10px; }
+      .search-trigger { padding:8px 11px; }
+      .search-trigger-label { display:none; }
+      .hamburger { display:block; }
+      .track-feedback { gap:8px; }
+      .feedback-controls { align-items:flex-start; flex-direction:column; }
+    }
+    @media (min-width:761px) and (max-width:980px) {
+      nav#mainNav { gap:8px; padding:0 16px; }
+      .nav-links a { padding:8px 9px; font-size:.78rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -817,11 +861,8 @@
     <a href="#about" onclick="navScroll('about')">About</a>
   </div>
   <div class="nav-right">
-    <div class="nav-search">
-      <span class="nav-search-icon">🔍</span>
-      <input type="text" placeholder="Search music…" onclick="openSearch()" readonly/>
-    </div>
-    <button class="hamburger" onclick="openMobileNav()">☰</button>
+    <button class="search-trigger" onclick="openSearch()" aria-label="Search music" title="Search music"><span aria-hidden="true">⌕</span><span class="search-trigger-label">Search</span></button>
+    <button class="hamburger" onclick="openMobileNav()" aria-label="Open menu">☰</button>
   </div>
 </nav>
 
@@ -1071,6 +1112,17 @@
   // ── STATE ──
   let allTracks = [], filteredTracks = [], allArtists = [], allGenres = [];
   let activeGenre = 'All', currentIdx = -1, playing = false, currentShareTrack = null;
+  let trackFeedback = [];
+  const visitorId = (() => {
+    try {
+      let id = localStorage.getItem('ngt_visitor_id');
+      if (!id) {
+        id = (crypto.randomUUID ? crypto.randomUUID() : 'v-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+        localStorage.setItem('ngt_visitor_id', id);
+      }
+      return id;
+    } catch (_) { return 'v-' + Math.random().toString(36).slice(2) + Date.now(); }
+  })();
   const gradients = ['g1','g2','g3','g4','g5','g6'];
   const emojis = ['🎵','🎶','🎤','🎸','🥁','🎹'];
   const audio = document.getElementById('audioEl');
@@ -1304,8 +1356,17 @@
         <div class="track-artist-name">${esc(track.artist)}</div>
         <div class="track-actions">
           <button class="action-btn gold play-btn">▶ Play</button>
-          <button class="action-btn dl-btn">⬇ MP3</button>
-          <button class="action-btn share-btn">Share</button>
+          <button class="action-btn dl-btn">⬇ Download</button>
+          <button class="action-btn share-btn">↗ Share</button>
+        </div>
+        <div class="track-feedback" data-feedback-track="${track.id}">
+          <div class="feedback-top"><span class="feedback-score">☆ No ratings yet</span><span class="feedback-likes">♡ 0 likes</span></div>
+          <div class="feedback-controls">
+            <button class="like-track" type="button" aria-label="Like song">♡ <span>Like</span></button>
+            <div class="track-stars" role="group" aria-label="Rate this song">
+              ${[1,2,3,4,5].map(n => `<button class="track-star" type="button" data-rating="${n}" aria-label="Rate ${n} out of 5">★</button>`).join('')}
+            </div>
+          </div>
         </div>
       </div>`;
     const idx = allTracks.indexOf(track);
@@ -1314,7 +1375,72 @@
     el.querySelector('.play-btn').onclick = (e) => { e.stopPropagation(); playTrack(idx); };
     el.querySelector('.dl-btn').onclick = (e) => { e.stopPropagation(); downloadTrack(track, e.currentTarget); };
     el.querySelector('.share-btn').onclick = (e) => { e.stopPropagation(); openShare(track); };
+    const feedbackBox = el.querySelector('.track-feedback');
+    feedbackBox.querySelector('.like-track').onclick = (e) => { e.stopPropagation(); saveTrackFeedback(track, { liked: !getMyFeedback(track.id)?.liked }); };
+    feedbackBox.querySelectorAll('.track-star').forEach(star => {
+      star.onclick = (e) => { e.stopPropagation(); saveTrackFeedback(track, { rating: Number(star.dataset.rating) }); };
+    });
+    paintTrackFeedback(track, feedbackBox);
     return el;
+  }
+
+  function getMyFeedback(trackId) {
+    return trackFeedback.find(row => row.track_id === trackId && row.visitor_id === visitorId) || null;
+  }
+
+  function paintTrackFeedback(track, box) {
+    if (!box) return;
+    const rows = trackFeedback.filter(row => row.track_id === track.id);
+    const rated = rows.filter(row => Number(row.rating) >= 1 && Number(row.rating) <= 5);
+    const average = rated.length ? rated.reduce((sum, row) => sum + Number(row.rating), 0) / rated.length : 0;
+    const likes = rows.filter(row => row.liked).length;
+    const mine = getMyFeedback(track.id);
+    box.querySelector('.feedback-score').textContent = rated.length ? `★ ${average.toFixed(1)} · ${rated.length} rating${rated.length === 1 ? '' : 's'}` : '☆ No ratings yet';
+    box.querySelector('.feedback-likes').textContent = `♡ ${likes} like${likes === 1 ? '' : 's'}`;
+    const like = box.querySelector('.like-track');
+    like.classList.toggle('liked', !!mine?.liked);
+    like.innerHTML = `${mine?.liked ? '♥' : '♡'} <span>${mine?.liked ? 'Liked' : 'Like'}</span>`;
+    box.querySelectorAll('.track-star').forEach(star => {
+      const n = Number(star.dataset.rating);
+      star.classList.toggle('selected', !!mine?.rating && n <= Number(mine.rating));
+      star.setAttribute('aria-pressed', String(Number(mine?.rating) === n));
+    });
+  }
+
+  async function loadTrackFeedback() {
+    const { data, error } = await sb.from('track_feedback').select('track_id,visitor_id,liked,rating');
+    if (error) {
+      console.warn('Could not load public song feedback:', error.message);
+      return;
+    }
+    trackFeedback = data || [];
+    document.querySelectorAll('.track-feedback').forEach(box => {
+      const track = allTracks.find(t => String(t.id) === box.dataset.feedbackTrack);
+      if (track) paintTrackFeedback(track, box);
+    });
+  }
+
+  async function saveTrackFeedback(track, changes) {
+    const previous = getMyFeedback(track.id);
+    const payload = {
+      track_id: track.id,
+      visitor_id: visitorId,
+      liked: changes.liked === undefined ? !!previous?.liked : !!changes.liked,
+      rating: changes.rating === undefined ? (previous?.rating ?? null) : changes.rating,
+      updated_at: new Date().toISOString()
+    };
+    const { data, error } = await sb.from('track_feedback').upsert(payload, { onConflict: 'track_id,visitor_id' }).select('track_id,visitor_id,liked,rating').single();
+    if (error) {
+      toast('Could not save your feedback. Please try again.');
+      console.error('Track feedback save failed:', error.message);
+      return;
+    }
+    trackFeedback = trackFeedback.filter(row => !(row.track_id === track.id && row.visitor_id === visitorId));
+    trackFeedback.push(data);
+    document.querySelectorAll('.track-feedback').forEach(box => {
+      if (box.dataset.feedbackTrack === track.id) paintTrackFeedback(track, box);
+    });
+    toast(changes.rating ? 'Your rating is visible to everyone.' : (payload.liked ? 'Song liked.' : 'Like removed.'));
   }
 
   function renderTrackGrid(tracks) {
@@ -1550,6 +1676,7 @@
       renderTrending(allTracks);
       renderArtists(allArtists, allTracks);
       renderGenres(allGenres, allTracks);
+      await loadTrackFeedback();
       handleSharedLink();
 
     } catch (err) {
