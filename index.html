@@ -1251,8 +1251,20 @@
   document.getElementById('nextBtn').onclick = () => { if (currentIdx < allTracks.length - 1) playTrack(currentIdx + 1); };
 
   function downloadTrack(track, btn) {
+    const sourceUrl = track.file_url || '';
+    let extension = 'mp3';
+    try {
+      const pathname = new URL(sourceUrl).pathname;
+      const match = pathname.match(/\\.([a-z0-9]{2,5})$/i);
+      if (match) extension = match[1].toLowerCase();
+    } catch (_) {}
+
+    // Supabase Storage accepts a filename in the download query parameter.
+    // Use a clean, human-readable name for both older uploads and new uploads.
+    const filename = `${(track.title || 'Untitled').trim()} - ${(track.artist || 'Unknown Artist').trim()}.${extension}`;
+    const separator = sourceUrl.includes('?') ? '&' : '?';
     const a = document.createElement('a');
-    a.href = track.file_url + (track.file_url.includes('?') ? '&' : '?') + 'download';
+    a.href = sourceUrl + separator + 'download=' + encodeURIComponent(filename);
     a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
     if (btn) { const orig = btn.textContent; btn.textContent = '✓ Done!'; setTimeout(() => btn.textContent = orig, 2000); }
