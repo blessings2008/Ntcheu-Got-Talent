@@ -898,6 +898,13 @@
       .search-bar-big input { min-width:0; font-size:1rem; }
       .search-results { max-height:calc(100dvh - 130px); }
     }
+    .search-suggestion-chips { display:flex; flex-wrap:wrap; gap:8px; padding:0 12px 18px; }
+    .search-suggestion-chip { border:1px solid var(--border); border-radius:999px; padding:8px 12px; color:var(--text); background:var(--surface); font:600 .78rem 'Inter',sans-serif; cursor:pointer; transition:.18s; }
+    .search-suggestion-chip:hover { border-color:var(--gold); color:var(--gold2); background:rgba(215,168,74,.08); }
+    .search-result-right { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:5px; }
+    .search-result-badge { color:var(--gold2); font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+    .search-result-row { width:100%; text-align:left; color:inherit; background:transparent; cursor:pointer; display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:12px; transition:background .16s,border-color .16s; }
+    .search-result-row:hover { background:var(--surface); border-color:var(--border); }
     @media (prefers-reduced-motion: reduce) {
       .mobile-nav-overlay,.mobile-nav-overlay::before,.mobile-nav-links a { transition:none !important; animation:none !important; }
     }
@@ -1248,44 +1255,16 @@
     const empty = document.getElementById('searchEmpty');
     const q = String(query || '').trim().toLocaleLowerCase();
     results.innerHTML = '';
-    if (!q) {
-      empty.style.display = 'none';
-      return;
-    }
 
-    const terms = q.split(/\\s+/).filter(Boolean);
-    const ranked = allTracks.map((track, index) => {
-      const title = String(track.title || '').toLocaleLowerCase();
-      const artist = String(track.artist || '').toLocaleLowerCase();
-      const genre = String(track.genre || '').toLocaleLowerCase();
-      const album = String(track.album || '').toLocaleLowerCase();
-      const searchable = [title, artist, genre, album].join(' ');
-      const matches = terms.every(term => searchable.includes(term));
-      if (!matches) return null;
-      let score = 0;
-      if (title === q) score += 100;
-      else if (title.startsWith(q)) score += 60;
-      else if (title.includes(q)) score += 40;
-      if (artist === q) score += 35;
-      else if (artist.startsWith(q)) score += 22;
-      else if (artist.includes(q)) score += 12;
-      if (genre.includes(q)) score += 6;
-      if (album.includes(q)) score += 4;
-      return { track, index, score };
-    }).filter(Boolean).sort((a,b) => b.score - a.score || a.track.title.localeCompare(b.track.title));
-
-    if (!ranked.length) {
-      empty.style.display = 'block';
-      results.appendChild(empty);
-      return;
-    }
-    empty.style.display = 'none';
-    const heading = document.createElement('div');
-    heading.className = 'search-results-heading';
-    heading.textContent = `${ranked.length} result${ranked.length === 1 ? '' : 's'}`;
-    results.appendChild(heading);
-
-    ranked.slice(0, 20).forEach(({ track, index }) => {
+    const addHeading = text => {
+      const heading = document.createElement('div');
+      heading.className = 'search-results-heading';
+      heading.textContent = text;
+      results.appendChild(heading);
+    };
+    const addTrackRow = (track, badge = '') => {
+      const index = allTracks.indexOf(track);
+      if (index < 0) return;
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'search-result-row';
@@ -1298,9 +1277,7 @@
         img.alt = '';
         img.loading = 'lazy';
         coverWrap.appendChild(img);
-      } else {
-        coverWrap.textContent = emojis[index % emojis.length];
-      }
+      } else coverWrap.textContent = emojis[index % emojis.length];
       const info = document.createElement('div');
       info.className = 'search-result-info';
       const title = document.createElement('div');
@@ -1310,16 +1287,135 @@
       artist.className = 'search-result-artist';
       artist.textContent = [track.artist || 'Unknown artist', track.genre].filter(Boolean).join(' · ');
       info.append(title, artist);
+      const right = document.createElement('div');
+      right.className = 'search-result-right';
+      if (badge) {
+        const tag = document.createElement('span');
+        tag.className = 'search-result-badge';
+        tag.textContent = badge;
+        right.appendChild(tag);
+      }
       const play = document.createElement('span');
       play.className = 'icon-btn';
       play.textContent = '▶';
       play.setAttribute('aria-hidden', 'true');
-      row.append(coverWrap, info, play);
+      right.appendChild(play);
+      row.append(coverWrap, info, right);
       row.onclick = () => { playTrack(index); closeSearch(); };
       results.appendChild(row);
-    });
-  }
+    };
 
+    const suggestions = [];
+    const seen = new Set();
+    const addSuggestion = (label, value, type) => {
+      const key = value.toLocaleLowerCase();
+      if (!value || seen.has(key)) return;
+      seen.add(key);
+      suggestions.push({ label, value, type });
+    };
+
+    if (!q) {
+      // Help visitors discover music before they type anything.
+      addHeading('Quick searches');
+      allGenres.slice(0, 8).forEach(g => addSuggestion(g.name, g.name, 'genre'));
+      [...new Set(allTracks.map(t => t.artist).filter(Boolean))].slice(0, 8).forEach(a => addSuggestion(a, a, 'artist'));
+      if (suggestions.length) {
+        const chips = document.createElement('div');
+        chips.className = 'search-suggestion-chips';
+        suggestions.slice(0, 14).forEach(item => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'search-suggestion-chip';
+          chip.textContent = item.type === 'genre' ? '♫ ' + item.label : '♬ ' + item.label;
+          chip.onclick = () => {
+            document.getElementById('searchInput').value = item.value;
+            handleSearch(item.value);
+          };
+          chips.appendChild(chip);
+        });
+        results.appendChild(chips);
+      }
+      const popular = [...allTracks].sort((a,b) => (Number(b.play_count)||0) - (Number(a.play_count)||0)).slice(0, 5);
+      if (popular.length) {
+        addHeading('Popular music');
+        popular.forEach(track => addTrackRow(track, 'Popular'));
+      }
+      return;
+    }
+
+    const terms = q.split(/\s+/).filter(Boolean);
+    const ranked = allTracks.map((track, index) => {
+      const title = String(track.title || '').toLocaleLowerCase();
+      const artist = String(track.artist || '').toLocaleLowerCase();
+      const genre = String(track.genre || '').toLocaleLowerCase();
+      const album = String(track.album || '').toLocaleLowerCase();
+      const searchable = [title, artist, genre, album].join(' ');
+      const matches = terms.every(term => searchable.includes(term));
+      let score = 0;
+      if (title === q) score += 100;
+      else if (title.startsWith(q)) score += 60;
+      else if (title.includes(q)) score += 40;
+      if (artist === q) score += 35;
+      else if (artist.startsWith(q)) score += 22;
+      else if (artist.includes(q)) score += 12;
+      if (genre.includes(q)) score += 6;
+      if (album.includes(q)) score += 4;
+      if (!matches) return { track, index, score, partial: terms.some(term => searchable.includes(term)) };
+      return { track, index, score, partial: false, exact: true };
+    }).filter(item => item.exact || item.partial)
+      .sort((a,b) => b.score - a.score || (a.track.title || '').localeCompare(b.track.title || ''));
+
+    const exactMatches = ranked.filter(item => item.exact);
+    const looseMatches = ranked.filter(item => !item.exact).slice(0, 4);
+    if (exactMatches.length) {
+      addHeading(`${exactMatches.length} matching result${exactMatches.length === 1 ? '' : 's'}`);
+      exactMatches.slice(0, 20).forEach(({ track }) => addTrackRow(track));
+    }
+
+    // Related picks are based on matching artist/genre, even when the title differs.
+    const matchIds = new Set(exactMatches.map(item => item.track.id));
+    const related = allTracks.filter(track => {
+      if (matchIds.has(track.id)) return false;
+      const artist = String(track.artist || '').toLocaleLowerCase();
+      const genre = String(track.genre || '').toLocaleLowerCase();
+      return exactMatches.some(item => {
+        const base = item.track;
+        return (base.artist && artist === String(base.artist).toLocaleLowerCase()) ||
+          (base.genre && genre === String(base.genre).toLocaleLowerCase());
+      });
+    }).slice(0, 5);
+    if (related.length) {
+      addHeading('You might also like');
+      related.forEach(track => addTrackRow(track, 'Related'));
+    }
+
+    if (looseMatches.length) {
+      addHeading('Similar matches');
+      looseMatches.forEach(({ track }) => addTrackRow(track, 'Similar'));
+    }
+
+    if (!exactMatches.length && !looseMatches.length) {
+      empty.style.display = 'block';
+      empty.textContent = 'No exact match found. Try a song title, artist, genre or album below.';
+      results.appendChild(empty);
+      const qTerms = terms.filter(term => term.length > 1);
+      const suggestionsBySimilarity = allTracks.map(track => {
+        const fields = [track.title, track.artist, track.genre, track.album].filter(Boolean).map(v => String(v).toLocaleLowerCase());
+        const score = qTerms.reduce((sum, term) => sum + (fields.some(field => field.includes(term)) ? 1 : 0), 0);
+        return { track, score };
+      }).filter(item => item.score > 0).sort((a,b) => b.score - a.score).slice(0, 5);
+      if (suggestionsBySimilarity.length) {
+        addHeading('Suggested tracks');
+        suggestionsBySimilarity.forEach(({ track }) => addTrackRow(track, 'Suggestion'));
+      } else {
+        const popular = [...allTracks].sort((a,b) => (Number(b.play_count)||0) - (Number(a.play_count)||0)).slice(0, 4);
+        if (popular.length) {
+          addHeading('Try these instead');
+          popular.forEach(track => addTrackRow(track, 'Popular'));
+        }
+      }
+    }
+  }
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       closeMobileNav();
