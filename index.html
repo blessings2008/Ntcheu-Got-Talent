@@ -905,6 +905,28 @@
     .search-result-badge { color:var(--gold2); font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
     .search-result-row { width:100%; text-align:left; color:inherit; background:transparent; cursor:pointer; display:flex; align-items:center; gap:12px; padding:9px 10px; border-radius:12px; transition:background .16s,border-color .16s; }
     .search-result-row:hover { background:var(--surface); border-color:var(--border); }
+    .search-overlay { padding-top:clamp(18px,5vh,52px); }
+    .search-bar-big { max-width:760px; margin-left:auto; margin-right:auto; border:1px solid var(--border); border-radius:18px; background:rgba(18,21,27,.96); }
+    .search-results { max-width:760px; margin:0 auto; padding:8px 2px 24px; }
+    .search-results-heading { margin-top:18px; }
+    .search-result-row { display:flex; min-height:72px; border:1px solid transparent; }
+    .search-result-cover { overflow:hidden; border-radius:10px; flex-shrink:0; display:grid; place-items:center; }
+    .search-result-cover img { width:100%; height:100%; object-fit:cover; }
+    .search-result-info { flex:1; min-width:0; }
+    .search-result-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; }
+    .search-result-artist { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .search-result-play { display:grid; place-items:center; width:34px; height:34px; border:1px solid var(--border); border-radius:50%; color:var(--gold2); font-size:.75rem; }
+    .search-result-row:hover .search-result-play { background:var(--gold); color:#111; border-color:var(--gold); }
+    .search-no-result { margin:10px 12px; color:var(--muted); line-height:1.6; }
+    .search-no-result strong { color:var(--text); display:inline-block; margin-bottom:3px; }
+    @media(max-width:600px) {
+      .search-overlay { padding:14px 12px 20px; }
+      .search-bar-big { border-radius:14px; }
+      .search-results { max-height:calc(100dvh - 110px); }
+      .search-result-row { gap:10px; padding:8px; }
+      .search-result-cover { width:48px; height:48px; min-width:48px; }
+      .search-result-play { width:30px; height:30px; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .mobile-nav-overlay,.mobile-nav-overlay::before,.mobile-nav-links a { transition:none !important; animation:none !important; }
     }
@@ -1253,167 +1275,142 @@
   function handleSearch(query) {
     const results = document.getElementById('searchResults');
     const empty = document.getElementById('searchEmpty');
-    const q = String(query || '').trim().toLocaleLowerCase();
+    const input = document.getElementById('searchInput');
+    const raw = String(query || '').trim();
+    const q = raw.toLocaleLowerCase().replace(/\\s+/g, ' ');
     results.innerHTML = '';
 
-    const addHeading = text => {
-      const heading = document.createElement('div');
-      heading.className = 'search-results-heading';
-      heading.textContent = text;
-      results.appendChild(heading);
+    const heading = label => {
+      const node = document.createElement('div');
+      node.className = 'search-results-heading';
+      node.textContent = label;
+      results.appendChild(node);
     };
-    const addTrackRow = (track, badge = '') => {
+    const addRow = (track, badge = '') => {
       const index = allTracks.indexOf(track);
       if (index < 0) return;
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'search-result-row';
-      row.setAttribute('aria-label', `Play ${track.title} by ${track.artist}`);
-      const coverWrap = document.createElement('div');
-      coverWrap.className = 'search-result-cover ' + (track.artwork_url ? '' : gradients[index % gradients.length]);
+      row.setAttribute('aria-label', `Play ${track.title || 'Untitled'} by ${track.artist || 'Unknown artist'}`);
+      const cover = document.createElement('div');
+      cover.className = 'search-result-cover ' + (track.artwork_url ? '' : gradients[index % gradients.length]);
       if (track.artwork_url) {
         const img = document.createElement('img');
-        img.src = track.artwork_url;
-        img.alt = '';
-        img.loading = 'lazy';
-        coverWrap.appendChild(img);
-      } else coverWrap.textContent = emojis[index % emojis.length];
-      const info = document.createElement('div');
-      info.className = 'search-result-info';
-      const title = document.createElement('div');
-      title.className = 'search-result-title';
-      title.textContent = track.title || 'Untitled';
-      const artist = document.createElement('div');
-      artist.className = 'search-result-artist';
-      artist.textContent = [track.artist || 'Unknown artist', track.genre].filter(Boolean).join(' · ');
+        img.src = track.artwork_url; img.alt = ''; img.loading = 'lazy';
+        img.onerror = () => { img.remove(); cover.textContent = emojis[index % emojis.length]; cover.classList.add(gradients[index % gradients.length]); };
+        cover.appendChild(img);
+      } else cover.textContent = emojis[index % emojis.length];
+      const info = document.createElement('div'); info.className = 'search-result-info';
+      const title = document.createElement('div'); title.className = 'search-result-title'; title.textContent = track.title || 'Untitled';
+      const artist = document.createElement('div'); artist.className = 'search-result-artist';
+      artist.textContent = [track.artist || 'Unknown artist', track.genre, track.album].filter(Boolean).join(' · ');
       info.append(title, artist);
-      const right = document.createElement('div');
-      right.className = 'search-result-right';
-      if (badge) {
-        const tag = document.createElement('span');
-        tag.className = 'search-result-badge';
-        tag.textContent = badge;
-        right.appendChild(tag);
-      }
-      const play = document.createElement('span');
-      play.className = 'icon-btn';
-      play.textContent = '▶';
-      play.setAttribute('aria-hidden', 'true');
-      right.appendChild(play);
-      row.append(coverWrap, info, right);
+      const right = document.createElement('div'); right.className = 'search-result-right';
+      if (badge) { const tag = document.createElement('span'); tag.className = 'search-result-badge'; tag.textContent = badge; right.appendChild(tag); }
+      const play = document.createElement('span'); play.className = 'search-result-play'; play.textContent = '▶'; play.setAttribute('aria-hidden','true');
+      right.appendChild(play); row.append(cover, info, right);
       row.onclick = () => { playTrack(index); closeSearch(); };
       results.appendChild(row);
     };
-
-    const suggestions = [];
-    const seen = new Set();
-    const addSuggestion = (label, value, type) => {
-      const key = value.toLocaleLowerCase();
-      if (!value || seen.has(key)) return;
-      seen.add(key);
-      suggestions.push({ label, value, type });
+    const addChips = (label, values, type) => {
+      const unique = [...new Map(values.filter(Boolean).map(value => [String(value).toLocaleLowerCase(), String(value)])).values()].slice(0, 8);
+      if (!unique.length) return;
+      heading(label);
+      const wrap = document.createElement('div'); wrap.className = 'search-suggestion-chips';
+      unique.forEach(value => {
+        const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'search-suggestion-chip';
+        chip.textContent = (type === 'genre' ? '♫ ' : '♬ ') + value;
+        chip.onclick = () => { input.value = value; handleSearch(value); input.focus({ preventScroll:true }); };
+        wrap.appendChild(chip);
+      });
+      results.appendChild(wrap);
     };
+    const normal = value => String(value || '').toLocaleLowerCase().trim();
+    const searchable = track => [track.title,track.artist,track.genre,track.album].map(normal).filter(Boolean);
+    const popularTracks = () => [...allTracks].sort((a,b) => (Number(b.play_count)||0) - (Number(a.play_count)||0));
 
     if (!q) {
-      // Help visitors discover music before they type anything.
-      addHeading('Quick searches');
-      allGenres.slice(0, 8).forEach(g => addSuggestion(g.name, g.name, 'genre'));
-      [...new Set(allTracks.map(t => t.artist).filter(Boolean))].slice(0, 8).forEach(a => addSuggestion(a, a, 'artist'));
-      if (suggestions.length) {
-        const chips = document.createElement('div');
-        chips.className = 'search-suggestion-chips';
-        suggestions.slice(0, 14).forEach(item => {
-          const chip = document.createElement('button');
-          chip.type = 'button';
-          chip.className = 'search-suggestion-chip';
-          chip.textContent = item.type === 'genre' ? '♫ ' + item.label : '♬ ' + item.label;
-          chip.onclick = () => {
-            document.getElementById('searchInput').value = item.value;
-            handleSearch(item.value);
-          };
-          chips.appendChild(chip);
-        });
-        results.appendChild(chips);
-      }
-      const popular = [...allTracks].sort((a,b) => (Number(b.play_count)||0) - (Number(a.play_count)||0)).slice(0, 5);
-      if (popular.length) {
-        addHeading('Popular music');
-        popular.forEach(track => addTrackRow(track, 'Popular'));
+      addChips('Browse genres', allGenres.map(g => g.name), 'genre');
+      addChips('Find an artist', [...new Set(allTracks.map(t => t.artist))], 'artist');
+      const popular = popularTracks().slice(0, 5);
+      if (popular.length) { heading('Popular music'); popular.forEach(track => addRow(track, 'Popular')); }
+      if (!allTracks.length) {
+        const note = document.createElement('div'); note.className = 'search-no-result'; note.textContent = 'Music will appear here as tracks are added.';
+        results.appendChild(note);
       }
       return;
     }
 
-    const terms = q.split(/\s+/).filter(Boolean);
-    const ranked = allTracks.map((track, index) => {
-      const title = String(track.title || '').toLocaleLowerCase();
-      const artist = String(track.artist || '').toLocaleLowerCase();
-      const genre = String(track.genre || '').toLocaleLowerCase();
-      const album = String(track.album || '').toLocaleLowerCase();
-      const searchable = [title, artist, genre, album].join(' ');
-      const matches = terms.every(term => searchable.includes(term));
+    const terms = q.split(' ').filter(Boolean);
+    const ranked = allTracks.map(track => {
+      const fields = searchable(track);
+      const title = normal(track.title), artist = normal(track.artist), genre = normal(track.genre), album = normal(track.album);
+      const allText = fields.join(' ');
+      const allTerms = terms.every(term => allText.includes(term));
       let score = 0;
-      if (title === q) score += 100;
-      else if (title.startsWith(q)) score += 60;
-      else if (title.includes(q)) score += 40;
-      if (artist === q) score += 35;
-      else if (artist.startsWith(q)) score += 22;
-      else if (artist.includes(q)) score += 12;
-      if (genre.includes(q)) score += 6;
-      if (album.includes(q)) score += 4;
-      if (!matches) return { track, index, score, partial: terms.some(term => searchable.includes(term)) };
-      return { track, index, score, partial: false, exact: true };
-    }).filter(item => item.exact || item.partial)
-      .sort((a,b) => b.score - a.score || (a.track.title || '').localeCompare(b.track.title || ''));
+      if (title === q) score += 120;
+      else if (title.startsWith(q)) score += 85;
+      else if (title.includes(q)) score += 60;
+      if (artist === q) score += 50;
+      else if (artist.startsWith(q)) score += 35;
+      else if (artist.includes(q)) score += 20;
+      if (genre.includes(q)) score += 12;
+      if (album.includes(q)) score += 8;
+      const partial = !allTerms && terms.some(term => allText.includes(term));
+      return { track, score, allTerms, partial, fields, title, artist, genre };
+    });
+    const matches = ranked.filter(x => x.allTerms).sort((a,b) => b.score-a.score || normal(a.track.title).localeCompare(normal(b.track.title)));
+    const relatedMatches = ranked.filter(x => !x.allTerms && x.partial).sort((a,b) => b.score-a.score).slice(0,5);
 
-    const exactMatches = ranked.filter(item => item.exact);
-    const looseMatches = ranked.filter(item => !item.exact).slice(0, 4);
-    if (exactMatches.length) {
-      addHeading(`${exactMatches.length} matching result${exactMatches.length === 1 ? '' : 's'}`);
-      exactMatches.slice(0, 20).forEach(({ track }) => addTrackRow(track));
-    }
-
-    // Related picks are based on matching artist/genre, even when the title differs.
-    const matchIds = new Set(exactMatches.map(item => item.track.id));
-    const related = allTracks.filter(track => {
-      if (matchIds.has(track.id)) return false;
-      const artist = String(track.artist || '').toLocaleLowerCase();
-      const genre = String(track.genre || '').toLocaleLowerCase();
-      return exactMatches.some(item => {
-        const base = item.track;
-        return (base.artist && artist === String(base.artist).toLocaleLowerCase()) ||
-          (base.genre && genre === String(base.genre).toLocaleLowerCase());
-      });
-    }).slice(0, 5);
-    if (related.length) {
-      addHeading('You might also like');
-      related.forEach(track => addTrackRow(track, 'Related'));
-    }
-
-    if (looseMatches.length) {
-      addHeading('Similar matches');
-      looseMatches.forEach(({ track }) => addTrackRow(track, 'Similar'));
-    }
-
-    if (!exactMatches.length && !looseMatches.length) {
-      empty.style.display = 'block';
-      empty.textContent = 'No exact match found. Try a song title, artist, genre or album below.';
-      results.appendChild(empty);
+    if (matches.length) {
+      heading(`Songs matching “${raw}” · ${matches.length}`);
+      matches.slice(0, 15).forEach(x => addRow(x.track));
+      const ids = new Set(matches.map(x => x.track.id));
+      const related = allTracks.filter(track => !ids.has(track.id) && matches.some(match =>
+        (match.artist && normal(track.artist) === match.artist) ||
+        (match.genre && normal(track.genre) === match.genre)
+      )).slice(0,4);
+      if (related.length) { heading('You might also like'); related.forEach(track => addRow(track, 'Related')); }
+    } else if (relatedMatches.length) {
+      heading('Closest matches');
+      relatedMatches.forEach(x => addRow(x.track, 'Similar'));
+    } else {
+      const note = document.createElement('div'); note.className = 'search-no-result';
+      note.innerHTML = '<strong>No exact match yet.</strong><br><span>Try a shorter title, artist name, or browse a genre below.</span>';
+      results.appendChild(note);
       const qTerms = terms.filter(term => term.length > 1);
-      const suggestionsBySimilarity = allTracks.map(track => {
-        const fields = [track.title, track.artist, track.genre, track.album].filter(Boolean).map(v => String(v).toLocaleLowerCase());
-        const score = qTerms.reduce((sum, term) => sum + (fields.some(field => field.includes(term)) ? 1 : 0), 0);
-        return { track, score };
-      }).filter(item => item.score > 0).sort((a,b) => b.score - a.score).slice(0, 5);
-      if (suggestionsBySimilarity.length) {
-        addHeading('Suggested tracks');
-        suggestionsBySimilarity.forEach(({ track }) => addTrackRow(track, 'Suggestion'));
-      } else {
-        const popular = [...allTracks].sort((a,b) => (Number(b.play_count)||0) - (Number(a.play_count)||0)).slice(0, 4);
-        if (popular.length) {
-          addHeading('Try these instead');
-          popular.forEach(track => addTrackRow(track, 'Popular'));
-        }
+      const fuzzy = ranked.map(item => {
+        const fieldScore = qTerms.reduce((sum, term) => {
+          if (item.fields.some(field => field.includes(term))) return sum + 3;
+          if (item.fields.some(field => field.startsWith(term.slice(0, Math.max(2, term.length - 1))))) return sum + 1;
+          return sum;
+        }, 0);
+        return { ...item, fuzzyScore: fieldScore };
+      }).filter(item => item.fuzzyScore > 0).sort((a,b) => b.fuzzyScore-a.fuzzyScore).slice(0,5);
+      if (fuzzy.length) { heading('Did you mean?'); fuzzy.forEach(x => addRow(x.track, 'Suggestion')); }
+      else {
+        const popular = popularTracks().slice(0,4);
+        if (popular.length) { heading('Try these tracks'); popular.forEach(track => addRow(track, 'Popular')); }
       }
+    }
+
+    // Suggest matching artists and genres while the visitor is typing.
+    const artistSuggestions = [...new Set(allTracks.map(t => t.artist).filter(Boolean))]
+      .filter(name => normal(name).includes(q) && !normal(name).startsWith(q) === false)
+      .filter(name => normal(name) !== q).slice(0,5);
+    const genreSuggestions = allGenres.map(g => g.name).filter(name => normal(name).includes(q) && normal(name) !== q).slice(0,5);
+    if (artistSuggestions.length || genreSuggestions.length) {
+      const values = [...artistSuggestions.map(value => ({value,type:'artist'})), ...genreSuggestions.map(value => ({value,type:'genre'}))];
+      heading('Search suggestions');
+      const wrap = document.createElement('div'); wrap.className = 'search-suggestion-chips';
+      values.slice(0,8).forEach(item => {
+        const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'search-suggestion-chip';
+        chip.textContent = (item.type === 'genre' ? '♫ ' : '♬ ') + item.value;
+        chip.onclick = () => { input.value = item.value; handleSearch(item.value); input.focus({preventScroll:true}); };
+        wrap.appendChild(chip);
+      });
+      results.appendChild(wrap);
     }
   }
   document.addEventListener('keydown', event => {
